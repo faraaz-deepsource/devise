@@ -1,6 +1,7 @@
 # encoding: UTF-8
 # frozen_string_literal: true
 # patch 2
+# patch 3
 require 'bundler/gem_tasks'
 require 'rake/testtask'
 require 'rdoc/task'
