@@ -9,5 +9,5 @@ class ApplicationController < ActionController::Base
   before_action :authenticate_user!, if: :devise_controller?
   respond_to(*Mime::SET.map(&:to_sym))
 
-  devise_group :commenter, contains: [:user, :admin]
+  devise_group :commenter, contains: %i[user admin]
 end
