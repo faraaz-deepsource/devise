@@ -28,7 +28,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   end
 
   test 'proxy [group]_signed_in? to authenticate? with each scope' do
-    [:user, :admin].each do |scope|
+    %i[user admin].each do |scope|
       @mock_warden.expects(:authenticate?).with(scope: scope).returns(false)
     end
     @controller.commenter_signed_in?
@@ -45,14 +45,14 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   end
 
   test 'proxy current_[group] to authenticate with each scope' do
-    [:user, :admin].each do |scope|
+    %i[user admin].each do |scope|
       @mock_warden.expects(:authenticate).with(scope: scope).returns(nil)
     end
     @controller.current_commenter
   end
 
   test 'proxy current_[plural_group] to authenticate with each scope' do
-    [:user, :admin].each do |scope|
+    %i[user admin].each do |scope|
       @mock_warden.expects(:authenticate).with(scope: scope)
     end
     @controller.current_commenters
@@ -69,8 +69,8 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   end
 
   test 'proxy authenticate_user! options to authenticate with user scope' do
-    @mock_warden.expects(:authenticate!).with(scope: :user, recall: "foo")
-    @controller.authenticate_user!(recall: "foo")
+    @mock_warden.expects(:authenticate!).with(scope: :user, recall: 'foo')
+    @controller.authenticate_user!(recall: 'foo')
   end
 
   test 'proxy authenticate_admin! to authenticate with admin scope' do
@@ -79,7 +79,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   end
 
   test 'proxy authenticate_[group]! to authenticate!? with each scope' do
-    [:user, :admin].each do |scope|
+    %i[user admin].each do |scope|
       @mock_warden.expects(:authenticate!).with(scope: scope)
       @mock_warden.expects(:authenticate?).with(scope: scope).returns(false)
     end
@@ -92,7 +92,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   end
 
   test 'proxy user_signed_in? to authenticate with user scope' do
-    @mock_warden.expects(:authenticate).with(scope: :user).returns("user")
+    @mock_warden.expects(:authenticate).with(scope: :user).returns('user')
     assert @controller.user_signed_in?
   end
 
@@ -154,7 +154,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
 
   test 'bypass the sign in' do
     user = User.new
-    @mock_warden.expects(:session_serializer).returns(serializer = mock())
+    @mock_warden.expects(:session_serializer).returns(serializer = mock)
     serializer.expects(:store).with(user, :user)
     @controller.bypass_sign_in(user)
   end
@@ -162,7 +162,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   test 'sign out clears up any signed in user from all scopes' do
     user = User.new
     @mock_warden.expects(:user).times(Devise.mappings.size)
-    @mock_warden.expects(:logout).with().returns(true)
+    @mock_warden.expects(:logout).with.returns(true)
     @controller.instance_variable_set(:@current_user, user)
     @controller.instance_variable_set(:@current_admin, user)
     @controller.sign_out
@@ -189,67 +189,67 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
 
   test 'sign out without args proxy to sign out all scopes' do
     @mock_warden.expects(:user).times(Devise.mappings.size)
-    @mock_warden.expects(:logout).with().returns(true)
-    @mock_warden.expects(:clear_strategies_cache!).with().returns(true)
+    @mock_warden.expects(:logout).with.returns(true)
+    @mock_warden.expects(:clear_strategies_cache!).with.returns(true)
     @controller.sign_out
   end
 
   test 'sign out everybody proxy to logout on warden' do
     @mock_warden.expects(:user).times(Devise.mappings.size)
-    @mock_warden.expects(:logout).with().returns(true)
+    @mock_warden.expects(:logout).with.returns(true)
     @controller.sign_out_all_scopes
   end
 
   test 'stored location for returns the location for a given scope' do
     assert_nil @controller.stored_location_for(:user)
-    @controller.session[:"user_return_to"] = "/foo.bar"
-    assert_equal "/foo.bar", @controller.stored_location_for(:user)
+    @controller.session[:user_return_to] = '/foo.bar'
+    assert_equal '/foo.bar', @controller.stored_location_for(:user)
   end
 
   test 'stored location for accepts a resource as argument' do
     assert_nil @controller.stored_location_for(:user)
-    @controller.session[:"user_return_to"] = "/foo.bar"
-    assert_equal "/foo.bar", @controller.stored_location_for(User.new)
+    @controller.session[:user_return_to] = '/foo.bar'
+    assert_equal '/foo.bar', @controller.stored_location_for(User.new)
   end
 
   test 'stored location cleans information after reading' do
-    @controller.session[:"user_return_to"] = "/foo.bar"
-    assert_equal "/foo.bar", @controller.stored_location_for(:user)
-    assert_nil @controller.session[:"user_return_to"]
+    @controller.session[:user_return_to] = '/foo.bar'
+    assert_equal '/foo.bar', @controller.stored_location_for(:user)
+    assert_nil @controller.session[:user_return_to]
   end
 
   test 'store location for stores a location to redirect back to' do
     assert_nil @controller.stored_location_for(:user)
-    @controller.store_location_for(:user, "/foo.bar")
-    assert_equal "/foo.bar", @controller.stored_location_for(:user)
+    @controller.store_location_for(:user, '/foo.bar')
+    assert_equal '/foo.bar', @controller.stored_location_for(:user)
   end
 
   test 'store bad location for stores a location to redirect back to' do
     assert_nil @controller.stored_location_for(:user)
-    @controller.store_location_for(:user, "/foo.bar\">Carry")
+    @controller.store_location_for(:user, '/foo.bar">Carry')
     assert_nil @controller.stored_location_for(:user)
   end
 
   test 'store location for accepts a resource as argument' do
-    @controller.store_location_for(User.new, "/foo.bar")
-    assert_equal "/foo.bar", @controller.stored_location_for(User.new)
+    @controller.store_location_for(User.new, '/foo.bar')
+    assert_equal '/foo.bar', @controller.stored_location_for(User.new)
   end
 
   test 'store location for stores paths' do
-    @controller.store_location_for(:user, "//host/foo.bar")
-    assert_equal "/foo.bar", @controller.stored_location_for(:user)
-    @controller.store_location_for(:user, "///foo.bar")
-    assert_equal "/foo.bar", @controller.stored_location_for(:user)
+    @controller.store_location_for(:user, '//host/foo.bar')
+    assert_equal '/foo.bar', @controller.stored_location_for(:user)
+    @controller.store_location_for(:user, '///foo.bar')
+    assert_equal '/foo.bar', @controller.stored_location_for(:user)
   end
 
   test 'store location for stores query string' do
-    @controller.store_location_for(:user, "/foo?bar=baz")
-    assert_equal "/foo?bar=baz", @controller.stored_location_for(:user)
+    @controller.store_location_for(:user, '/foo?bar=baz')
+    assert_equal '/foo?bar=baz', @controller.stored_location_for(:user)
   end
 
   test 'store location for stores fragments' do
-    @controller.store_location_for(:user, "/foo#bar")
-    assert_equal "/foo#bar", @controller.stored_location_for(:user)
+    @controller.store_location_for(:user, '/foo#bar')
+    assert_equal '/foo#bar', @controller.stored_location_for(:user)
   end
 
   test 'after sign in path defaults to root path if none by was specified for the given scope' do
@@ -267,10 +267,10 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
 
   test 'sign in and redirect uses the stored location' do
     user = User.new
-    @controller.session[:user_return_to] = "/foo.bar"
+    @controller.session[:user_return_to] = '/foo.bar'
     @mock_warden.expects(:user).with(:user).returns(nil)
     @mock_warden.expects(:set_user).with(user, scope: :user).returns(true)
-    @controller.expects(:redirect_to).with("/foo.bar")
+    @controller.expects(:redirect_to).with('/foo.bar')
     @controller.sign_in_and_redirect(user)
   end
 
@@ -296,7 +296,7 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
       @mock_warden.expects(:logout).with(:admin).returns(true)
       @mock_warden.expects(:clear_strategies_cache!).with(scope: :admin).returns(true)
       @controller.expects(:redirect_to).with(admin_root_path)
-      @controller.instance_eval "def after_sign_out_path_for(resource); admin_root_path; end"
+      @controller.instance_eval 'def after_sign_out_path_for(resource); admin_root_path; end', __FILE__, __LINE__
       @controller.sign_out_and_redirect(:admin)
     end
   end
@@ -304,10 +304,10 @@ class ControllerAuthenticatableTest < Devise::ControllerTestCase
   test 'sign out and redirect uses the configured after sign out path when signing out all scopes' do
     swap Devise, sign_out_all_scopes: true do
       @mock_warden.expects(:user).times(Devise.mappings.size)
-      @mock_warden.expects(:logout).with().returns(true)
-      @mock_warden.expects(:clear_strategies_cache!).with().returns(true)
+      @mock_warden.expects(:logout).with.returns(true)
+      @mock_warden.expects(:clear_strategies_cache!).with.returns(true)
       @controller.expects(:redirect_to).with(admin_root_path)
-      @controller.instance_eval "def after_sign_out_path_for(resource); admin_root_path; end"
+      @controller.instance_eval 'def after_sign_out_path_for(resource); admin_root_path; end', __FILE__, __LINE__
       @controller.sign_out_and_redirect(:admin)
     end
   end
