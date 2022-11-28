@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class ConfirmationTest < Devise::IntegrationTest
-
   def visit_user_confirmation_with_token(confirmation_token)
     visit user_confirmation_path(confirmation_token: confirmation_token)
   end
@@ -37,7 +36,7 @@ class ConfirmationTest < Devise::IntegrationTest
   test 'user with invalid confirmation token should not be able to confirm an account' do
     visit_user_confirmation_with_token('invalid_confirmation')
     assert_have_selector '#error_explanation'
-    assert_contain %r{Confirmation token(.*)invalid}
+    assert_contain(/Confirmation token(.*)invalid/)
   end
 
   test 'user with valid confirmation token should not be able to confirm an account after the token has expired' do
@@ -47,7 +46,7 @@ class ConfirmationTest < Devise::IntegrationTest
       visit_user_confirmation_with_token(user.raw_confirmation_token)
 
       assert_have_selector '#error_explanation'
-      assert_contain %r{needs to be confirmed within 3 days}
+      assert_contain(/needs to be confirmed within 3 days/)
       refute user.reload.confirmed?
       assert_current_url "/users/confirmation?confirmation_token=#{user.raw_confirmation_token}"
     end
@@ -96,12 +95,12 @@ class ConfirmationTest < Devise::IntegrationTest
   end
 
   test 'user should be redirected to a custom path after confirmation' do
-    Devise::ConfirmationsController.any_instance.stubs(:after_confirmation_path_for).returns("/?custom=1")
+    Devise::ConfirmationsController.any_instance.stubs(:after_confirmation_path_for).returns('/?custom=1')
 
     user = create_user(confirm: false)
     visit_user_confirmation_with_token(user.raw_confirmation_token)
 
-    assert_current_url "/?custom=1"
+    assert_current_url '/?custom=1'
   end
 
   test 'already confirmed user should not be able to confirm the account again' do
@@ -175,28 +174,28 @@ class ConfirmationTest < Devise::IntegrationTest
     assert_current_url '/users/sign_in'
   end
 
-  test "should not be able to confirm an email with a blank confirmation token" do
-    visit_user_confirmation_with_token("")
+  test 'should not be able to confirm an email with a blank confirmation token' do
+    visit_user_confirmation_with_token('')
 
     assert_contain "Confirmation token can't be blank"
   end
 
-  test "should not be able to confirm an email with a nil confirmation token" do
+  test 'should not be able to confirm an email with a nil confirmation token' do
     visit_user_confirmation_with_token(nil)
 
     assert_contain "Confirmation token can't be blank"
   end
 
-  test "should not be able to confirm user with blank confirmation token" do
+  test 'should not be able to confirm user with blank confirmation token' do
     user = create_user(confirm: false)
-    user.update_attribute(:confirmation_token, "")
+    user.update_attribute(:confirmation_token, '')
 
-    visit_user_confirmation_with_token("")
+    visit_user_confirmation_with_token('')
 
     assert_contain "Confirmation token can't be blank"
   end
 
-  test "should not be able to confirm user with nil confirmation token" do
+  test 'should not be able to confirm user with nil confirmation token' do
     user = create_user(confirm: false)
     user.update_attribute(:confirmation_token, nil)
 
@@ -207,7 +206,7 @@ class ConfirmationTest < Devise::IntegrationTest
 
   test 'error message is configurable by resource name' do
     store_translations :en, devise: {
-      failure: { user: { unconfirmed: "Not confirmed user" } }
+      failure: { user: { unconfirmed: 'Not confirmed user' } }
     } do
       sign_in_as_user(confirm: false)
       assert_contain 'Not confirmed user'
@@ -242,7 +241,7 @@ class ConfirmationTest < Devise::IntegrationTest
     assert_includes response.body, '{"confirmation_token":['
   end
 
-  test "when in paranoid mode and with a valid e-mail, should not say that the e-mail is valid" do
+  test 'when in paranoid mode and with a valid e-mail, should not say that the e-mail is valid' do
     swap Devise, paranoid: true do
       user = create_user(confirm: false)
       visit new_user_session_path
@@ -251,24 +250,24 @@ class ConfirmationTest < Devise::IntegrationTest
       fill_in 'email', with: user.email
       click_button 'Resend confirmation instructions'
 
-      assert_contain "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
-      assert_current_url "/users/sign_in"
+      assert_contain 'If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes.'
+      assert_current_url '/users/sign_in'
     end
   end
 
-  test "when in paranoid mode and with a invalid e-mail, should not say that the e-mail is invalid" do
+  test 'when in paranoid mode and with a invalid e-mail, should not say that the e-mail is invalid' do
     swap Devise, paranoid: true do
       visit new_user_session_path
 
       click_link "Didn't receive confirmation instructions?"
-      fill_in 'email', with: "idonthavethisemail@gmail.com"
+      fill_in 'email', with: 'idonthavethisemail@gmail.com'
       click_button 'Resend confirmation instructions'
 
-      assert_not_contain "1 error prohibited this user from being saved:"
-      assert_not_contain "Email not found"
+      assert_not_contain '1 error prohibited this user from being saved:'
+      assert_not_contain 'Email not found'
 
-      assert_contain "If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes."
-      assert_current_url "/users/sign_in"
+      assert_contain 'If your email address exists in our database, you will receive an email with instructions for how to confirm your email address in a few minutes.'
+      assert_current_url '/users/sign_in'
     end
   end
 end
@@ -291,7 +290,7 @@ class ConfirmationOnChangeTest < Devise::IntegrationTest
     click_link "Didn't receive confirmation instructions?"
 
     fill_in 'email', with: admin.unconfirmed_email
-    assert_difference "ActionMailer::Base.deliveries.size" do
+    assert_difference 'ActionMailer::Base.deliveries.size' do
       click_button 'Resend confirmation instructions'
     end
 
@@ -338,7 +337,7 @@ class ConfirmationOnChangeTest < Devise::IntegrationTest
     admin.update(email: 'new_admin_test@example.com')
     assert_equal 'new_admin_test@example.com', admin.unconfirmed_email
 
-    create_second_admin(email: "new_admin_test@example.com")
+    create_second_admin(email: 'new_admin_test@example.com')
 
     visit_admin_confirmation_with_token(admin.raw_confirmation_token)
     assert_have_selector '#error_explanation'
