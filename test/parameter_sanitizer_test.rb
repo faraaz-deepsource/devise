@@ -79,7 +79,7 @@ class ParameterSanitizerTest < ActiveSupport::TestCase
 
   test 'permit parameters for new actions' do
     sanitizer = sanitizer('user' => { 'email' => 'jose@omglol', 'name' => 'Jose' })
-    sanitizer.permit(:invite_user, keys: [:email, :name])
+    sanitizer.permit(:invite_user, keys: %i[email name])
 
     sanitized = sanitizer.sanitize(:invite_user)
 
