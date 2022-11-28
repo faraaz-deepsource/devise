@@ -7,8 +7,8 @@ class DeviseHelperTest < Devise::IntegrationTest
     model_labels = { models: { user: 'the user' } }
     translations = {
       errors: { messages: { not_saved: {
-        one: "Can't save %{resource} because of 1 error",
-        other: "Can't save %{resource} because of %{count} errors"
+        one: "Can't save %<resource>s because of 1 error",
+        other: "Can't save %<resource>s because of %<count>s errors"
       } } },
       activerecord: model_labels,
       mongoid: model_labels
