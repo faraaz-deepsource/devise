@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "active_support/core_ext/module/delegation"
+require 'active_support/core_ext/module/delegation'
 
 module Devise
   class TimeInflector
@@ -8,6 +8,7 @@ module Devise
 
     class << self
       attr_reader :instance
+
       delegate :time_ago_in_words, to: :instance
     end
 

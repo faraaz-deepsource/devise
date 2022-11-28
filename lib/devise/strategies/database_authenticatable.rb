@@ -7,10 +7,13 @@ module Devise
     # Default strategy for signing in a user, based on their email and password in the database.
     class DatabaseAuthenticatable < Authenticatable
       def authenticate!
-        resource  = password.present? && mapping.to.find_for_database_authentication(authentication_hash)
+        resource = password.present? && mapping.to.find_for_database_authentication(authentication_hash)
         hashed = false
 
-        if validate(resource){ hashed = true; resource.valid_password?(password) }
+        if validate(resource) do
+             hashed = true
+             resource.valid_password?(password)
+           end
           remember_me(resource)
           resource.after_database_authentication
           success!(resource)
@@ -21,7 +24,7 @@ module Devise
         # exist in the database if the password hashing algorithm is not called.
         mapping.to.new.password = password if !hashed && Devise.paranoid
         unless resource
-          Devise.paranoid ? fail(:invalid) : fail(:not_found_in_database)
+          Devise.paranoid ? raise(:invalid) : raise(:not_found_in_database)
         end
       end
     end

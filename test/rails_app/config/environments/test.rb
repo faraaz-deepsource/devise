@@ -18,13 +18,13 @@ RailsApp::Application.configure do
   # Apache or NGINX already handles this.
   if Devise::Test.rails5_and_up?
     config.public_file_server.enabled = true
-    config.public_file_server.headers = {'Cache-Control' => 'public, max-age=3600'}
-  elsif Rails.version >= "4.2.0"
+    config.public_file_server.headers = { 'Cache-Control' => 'public, max-age=3600' }
+  elsif Rails.version >= '4.2.0'
     config.serve_static_files = true
-    config.static_cache_control = "public, max-age=3600"
+    config.static_cache_control = 'public, max-age=3600'
   else
     config.serve_static_assets = true
-    config.static_cache_control = "public, max-age=3600"
+    config.static_cache_control = 'public, max-age=3600'
   end
 
   # Show full error reports and disable caching.

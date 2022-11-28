@@ -29,7 +29,7 @@ module Devise
     #
     module UrlHelpers
       def self.remove_helpers!
-        self.instance_methods.map(&:to_s).grep(/_(url|path)$/).each do |method|
+        instance_methods.map(&:to_s).grep(/_(url|path)$/).each do |method|
           remove_method method
         end
       end
@@ -41,9 +41,9 @@ module Devise
         end
 
         routes.each do |module_name, actions|
-          [:path, :url].each do |path_or_url|
+          %i[path url].each do |path_or_url|
             actions.each do |action|
-              action = action ? "#{action}_" : ""
+              action = action ? "#{action}_" : ''
               method = :"#{action}#{module_name}_#{path_or_url}"
 
               define_method method do |resource_or_scope, *args|
