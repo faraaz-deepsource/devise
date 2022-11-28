@@ -17,23 +17,21 @@ module Devise
       app.reload_routes! if Devise.reload_routes
     end
 
-    initializer "devise.url_helpers" do
+    initializer 'devise.url_helpers' do
       Devise.include_helpers(Devise::Controllers)
     end
 
-    initializer "devise.omniauth", after: :load_config_initializers, before: :build_middleware_stack do |app|
-      Devise.omniauth_configs.each do |provider, config|
+    initializer 'devise.omniauth', after: :load_config_initializers, before: :build_middleware_stack do |app|
+      Devise.omniauth_configs.each do |_provider, config|
         app.middleware.use config.strategy_class, *config.args do |strategy|
           config.strategy = strategy
         end
       end
 
-      if Devise.omniauth_configs.any?
-        Devise.include_helpers(Devise::OmniAuth)
-      end
+      Devise.include_helpers(Devise::OmniAuth) if Devise.omniauth_configs.any?
     end
 
-    initializer "devise.secret_key" do |app|
+    initializer 'devise.secret_key' do |app|
       Devise.secret_key ||= Devise::SecretKeyFinder.new(app).find
 
       Devise.token_generator ||=

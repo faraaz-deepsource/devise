@@ -40,12 +40,12 @@ module Devise
       ruby2_keywords(:process) if respond_to?(:ruby2_keywords, true)
 
       # We need to set up the environment variables and the response in the controller.
-      def setup_controller_for_warden #:nodoc:
+      def setup_controller_for_warden # :nodoc:
         @request.env['action_controller.instance'] = @controller
       end
 
       # Quick access to Warden::Proxy.
-      def warden #:nodoc:
+      def warden # :nodoc:
         @request.env['warden'] ||= begin
           manager = Warden::Manager.new(nil) do |config|
             config.merge! Devise.warden_config
@@ -129,23 +129,23 @@ module Devise
         result = options[:result] || proxy.result
 
         ret = case result
-        when :redirect
-          body = proxy.message || "You are being redirected to #{proxy.headers['Location']}"
-          [proxy.status, proxy.headers, [body]]
-        when :custom
-          proxy.custom_response
-        else
-          request.env["PATH_INFO"] = "/#{options[:action]}"
-          request.env["warden.options"] = options
-          Warden::Manager._run_callbacks(:before_failure, env, options)
+              when :redirect
+                body = proxy.message || "You are being redirected to #{proxy.headers['Location']}"
+                [proxy.status, proxy.headers, [body]]
+              when :custom
+                proxy.custom_response
+              else
+                request.env['PATH_INFO'] = "/#{options[:action]}"
+                request.env['warden.options'] = options
+                Warden::Manager._run_callbacks(:before_failure, env, options)
 
-          status, headers, response = Devise.warden_config[:failure_app].call(env).to_a
-          @controller.response.headers.merge!(headers)
-          @controller.response.content_type = headers["Content-Type"] unless Rails::VERSION::MAJOR >= 5
-          @controller.status = status
-          @controller.response_body = response.body
-          nil # causes process return @response
-        end
+                status, headers, response = Devise.warden_config[:failure_app].call(env).to_a
+                @controller.response.headers.merge!(headers)
+                @controller.response.content_type = headers['Content-Type'] unless Rails::VERSION::MAJOR >= 5
+                @controller.status = status
+                @controller.response_body = response.body
+                nil # causes process return @response
+              end
 
         # ensure that the controller response is set up. In production, this is
         # not necessary since warden returns the results to rack. However, at
