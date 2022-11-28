@@ -5,5 +5,5 @@ name = "ruby"
 enabled = true
 
 [[transformers]]
-name = "standardrb"
+name = "rubocop"
 enabled = true
