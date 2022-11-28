@@ -7,7 +7,7 @@ module SharedUser
     devise :database_authenticatable, :confirmable, :lockable, :recoverable,
            :registerable, :rememberable, :timeoutable,
            :trackable, :validatable, :omniauthable, password_length: 7..72,
-           reconfirmable: false
+                                                    reconfirmable: false
 
     attr_accessor :other_key
 
@@ -22,8 +22,8 @@ module SharedUser
   module ExtendMethods
     def new_with_session(params, session)
       super.tap do |user|
-        if data = session["devise.facebook_data"]
-          user.email = data["email"]
+        if data = session['devise.facebook_data']
+          user.email = data['email']
           user.confirmed_at = Time.now
         end
       end

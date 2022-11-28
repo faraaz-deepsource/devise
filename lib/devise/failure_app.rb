@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "action_controller/metal"
+require 'action_controller/metal'
 
 module Devise
   # Failure application that will be called every time :warden is thrown from
@@ -26,7 +26,7 @@ module Devise
     # Try retrieving the URL options from the parent controller (usually
     # ApplicationController). Instance methods are not supported at the moment,
     # so only the class-level attribute is used.
-    def self.default_url_options(*args)
+    def self.default_url_options(*_args)
       if defined?(Devise.parent_controller.constantize)
         Devise.parent_controller.constantize.try(:default_url_options) || {}
       else
@@ -46,27 +46,27 @@ module Devise
 
     def http_auth
       self.status = 401
-      self.headers["WWW-Authenticate"] = %(Basic realm=#{Devise.http_authentication_realm.inspect}) if http_auth_header?
+      headers['WWW-Authenticate'] = %(Basic realm=#{Devise.http_authentication_realm.inspect}) if http_auth_header?
       self.content_type = request.format.to_s
       self.response_body = http_auth_body
     end
 
     def recall
       header_info = if relative_url_root?
-        base_path = Pathname.new(relative_url_root)
-        full_path = Pathname.new(attempted_path)
+                      base_path = Pathname.new(relative_url_root)
+                      full_path = Pathname.new(attempted_path)
 
-        { "SCRIPT_NAME" => relative_url_root,
-          "PATH_INFO" => '/' + full_path.relative_path_from(base_path).to_s }
-      else
-        { "PATH_INFO" => attempted_path }
-      end
+                      { 'SCRIPT_NAME' => relative_url_root,
+                        'PATH_INFO' => '/' + full_path.relative_path_from(base_path).to_s }
+                    else
+                      { 'PATH_INFO' => attempted_path }
+                    end
 
-      header_info.each do | var, value|
+      header_info.each do |var, value|
         if request.respond_to?(:set_header)
           request.set_header(var, value)
         else
-          request.env[var]  = value
+          request.env[var] = value
         end
       end
 
@@ -87,7 +87,7 @@ module Devise
       redirect_to redirect_url
     end
 
-  protected
+    protected
 
     def i18n_options(options)
       options
@@ -99,10 +99,12 @@ module Devise
       if message.is_a?(Symbol)
         options = {}
         options[:resource_name] = scope
-        options[:scope] = "devise.failure"
+        options[:scope] = 'devise.failure'
         options[:default] = [message]
         auth_keys = scope_class.authentication_keys
-        keys = (auth_keys.respond_to?(:keys) ? auth_keys.keys : auth_keys).map { |key| scope_class.human_attribute_name(key) }
+        keys = (auth_keys.respond_to?(:keys) ? auth_keys.keys : auth_keys).map do |key|
+          scope_class.human_attribute_name(key)
+        end
         options[:authentication_keys] = keys.join(I18n.translate(:"support.array.words_connector"))
         options = i18n_options(options)
 
@@ -117,10 +119,10 @@ module Devise
         flash[:timedout] = true if is_flashing_format?
 
         path = if request.get?
-          attempted_path
-        else
-          request.referrer
-        end
+                 attempted_path
+               else
+                 request.referrer
+               end
 
         path || scope_url
       else
@@ -133,7 +135,7 @@ module Devise
     end
 
     def scope_url
-      opts  = {}
+      opts = {}
 
       # Initialize script_name with nil to prevent infinite loops in
       # authenticated mounted engines in rails 4.2 and 5.0
@@ -162,12 +164,12 @@ module Devise
       elsif respond_to?(:root_url)
         root_url(opts)
       else
-        "/"
+        '/'
       end
     end
 
     def skip_format?
-      %w(html */*).include? request_format.to_s
+      %w[html */*].include? request_format.to_s
     end
 
     # Choose whether we should respond in an HTTP authentication fashion,
@@ -194,9 +196,10 @@ module Devise
 
     def http_auth_body
       return i18n_message unless request_format
+
       method = "to_#{request_format}"
-      if method == "to_xml"
-        { error: i18n_message }.to_xml(root: "errors")
+      if method == 'to_xml'
+        { error: i18n_message }.to_xml(root: 'errors')
       elsif {}.respond_to?(method)
         { error: i18n_message }.send(method)
       else
@@ -205,18 +208,18 @@ module Devise
     end
 
     def recall_app(app)
-      controller, action = app.split("#")
+      controller, action = app.split('#')
       controller_name  = ActiveSupport::Inflector.camelize(controller)
       controller_klass = ActiveSupport::Inflector.constantize("#{controller_name}Controller")
       controller_klass.action(action)
     end
 
     def warden
-      request.respond_to?(:get_header) ? request.get_header("warden") : request.env["warden"]
+      request.respond_to?(:get_header) ? request.get_header('warden') : request.env['warden']
     end
 
     def warden_options
-      request.respond_to?(:get_header) ? request.get_header("warden.options") : request.env["warden.options"]
+      request.respond_to?(:get_header) ? request.get_header('warden.options') : request.env['warden.options']
     end
 
     def warden_message
@@ -278,7 +281,7 @@ module Devise
     end
 
     def rails_51_and_up?
-      Rails.gem_version >= Gem::Version.new("5.1")
+      Rails.gem_version >= Gem::Version.new('5.1')
     end
   end
 end
