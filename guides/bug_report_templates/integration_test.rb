@@ -3,7 +3,7 @@
 begin
   require 'bundler/inline'
 rescue LoadError => e
-  $stderr.puts 'Bundler version 1.10 or later is required. Please update your Bundler'
+  warn 'Bundler version 1.10 or later is required. Please update your Bundler'
   raise e
 end
 
@@ -22,7 +22,7 @@ require 'active_record'
 require 'devise/rails/routes'
 require 'devise/rails/warden_compat'
 
-ActiveRecord::Base.establish_connection( adapter: :sqlite3, database:  ':memory:')
+ActiveRecord::Base.establish_connection(adapter: :sqlite3, database: ':memory:')
 
 class DeviseCreateUsers < ActiveRecord::Migration
   def change
@@ -31,7 +31,6 @@ class DeviseCreateUsers < ActiveRecord::Migration
       t.string :encrypted_password, null: true
       t.timestamps null: false
     end
-
   end
 end
 
@@ -53,7 +52,6 @@ class TestApp < Rails::Application
 
   config.logger = Logger.new($stdout)
   Rails.logger  = config.logger
-
 end
 
 Rails.application.initialize!

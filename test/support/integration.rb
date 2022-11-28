@@ -36,7 +36,7 @@ class ActionDispatch::IntegrationTest
     end
   end
 
-  def sign_in_as_user(options = {}, &block)
+  def sign_in_as_user(options = {})
     user = create_user(options)
     visit_with_option options[:visit], new_user_session_path
     fill_in 'email', with: options[:email] || 'user@test.com'
@@ -47,7 +47,7 @@ class ActionDispatch::IntegrationTest
     user
   end
 
-  def sign_in_as_admin(options = {}, &block)
+  def sign_in_as_admin(options = {})
     admin = create_admin(options)
     visit_with_option options[:visit], new_admin_session_path
     fill_in 'email', with: 'admin@test.com'
@@ -62,9 +62,9 @@ class ActionDispatch::IntegrationTest
   #
   def assert_redirected_to(url)
     assert_includes [301, 302], @integration_session.status,
-           "Expected status to be 301 or 302, got #{@integration_session.status}"
+                    "Expected status to be 301 or 302, got #{@integration_session.status}"
 
-    assert_url url, @integration_session.headers["Location"]
+    assert_url url, @integration_session.headers['Location']
   end
 
   def assert_current_url(expected)
@@ -77,19 +77,19 @@ class ActionDispatch::IntegrationTest
 
   protected
 
-    def visit_with_option(given, default)
-      case given
-      when String
-        visit given
-      when FalseClass
-        # Do nothing
-      else
-        visit default
-      end
+  def visit_with_option(given, default)
+    case given
+    when String
+      visit given
+    when FalseClass
+      # Do nothing
+    else
+      visit default
     end
+  end
 
-    def prepend_host(url)
-      url = "http://#{request.host}#{url}" if url[0] == ?/
-      url
-    end
+  def prepend_host(url)
+    url = "http://#{request.host}#{url}" if url[0] == '/'
+    url
+  end
 end
