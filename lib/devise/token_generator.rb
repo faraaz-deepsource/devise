@@ -4,12 +4,12 @@ require 'openssl'
 
 module Devise
   class TokenGenerator
-    def initialize(key_generator, digest = "SHA256")
+    def initialize(key_generator, digest = 'SHA256')
       @key_generator = key_generator
       @digest = digest
     end
 
-    def digest(klass, column, value)
+    def digest(_klass, column, value)
       value.present? && OpenSSL::HMAC.hexdigest(@digest, key_for(column), value.to_s)
     end
 

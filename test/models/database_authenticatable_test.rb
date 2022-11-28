@@ -70,22 +70,30 @@ class DatabaseAuthenticatableTest < ActiveSupport::TestCase
     end
   end
 
-  test "param filter should not convert booleans and integer to strings" do
-    conditions = { "login" => "foo@bar.com", "bool1" => true, "bool2" => false, "fixnum" => 123, "will_be_converted" => (1..10) }
+  test 'param filter should not convert booleans and integer to strings' do
+    conditions = { 'login' => 'foo@bar.com', 'bool1' => true, 'bool2' => false, 'fixnum' => 123,
+                   'will_be_converted' => (1..10) }
     conditions = Devise::ParameterFilter.new([], []).filter(conditions)
-    assert_equal( { "login" => "foo@bar.com", "bool1" => "true", "bool2" => "false", "fixnum" => "123", "will_be_converted" => "1..10" }, conditions)
+    assert_equal(
+      { 'login' => 'foo@bar.com', 'bool1' => 'true', 'bool2' => 'false', 'fixnum' => '123',
+        'will_be_converted' => '1..10' }, conditions
+    )
   end
 
   test 'param filter should filter case_insensitive_keys as insensitive' do
-    conditions = {'insensitive' => 'insensitive_VAL', 'sensitive' => 'sensitive_VAL'}
+    conditions = { 'insensitive' => 'insensitive_VAL', 'sensitive' => 'sensitive_VAL' }
     conditions = Devise::ParameterFilter.new(['insensitive'], []).filter(conditions)
-    assert_equal( {'insensitive' => 'insensitive_val', 'sensitive' => 'sensitive_VAL'}, conditions )
+    assert_equal({ 'insensitive' => 'insensitive_val', 'sensitive' => 'sensitive_VAL' }, conditions)
   end
 
   test 'param filter should filter strip_whitespace_keys stripping whitespaces' do
-    conditions = {'strip_whitespace' => ' strip_whitespace_val ', 'do_not_strip_whitespace' => ' do_not_strip_whitespace_val '}
+    conditions = { 'strip_whitespace' => ' strip_whitespace_val ',
+                   'do_not_strip_whitespace' => ' do_not_strip_whitespace_val ' }
     conditions = Devise::ParameterFilter.new([], ['strip_whitespace']).filter(conditions)
-    assert_equal( {'strip_whitespace' => 'strip_whitespace_val', 'do_not_strip_whitespace' => ' do_not_strip_whitespace_val '}, conditions )
+    assert_equal(
+      { 'strip_whitespace' => 'strip_whitespace_val',
+        'do_not_strip_whitespace' => ' do_not_strip_whitespace_val ' }, conditions
+    )
   end
 
   test 'param filter should not add keys to filtered hash' do
@@ -155,22 +163,22 @@ class DatabaseAuthenticatableTest < ActiveSupport::TestCase
   test 'should update password with valid current password' do
     user = create_user
     assert user.update_with_password(current_password: '12345678',
-      password: 'pass4321', password_confirmation: 'pass4321')
+                                     password: 'pass4321', password_confirmation: 'pass4321')
     assert user.reload.valid_password?('pass4321')
   end
 
   test 'should add an error to current password when it is invalid' do
     user = create_user
     refute user.update_with_password(current_password: 'other',
-      password: 'pass4321', password_confirmation: 'pass4321')
+                                     password: 'pass4321', password_confirmation: 'pass4321')
     assert user.reload.valid_password?('12345678')
-    assert_match "is invalid", user.errors[:current_password].join
+    assert_match 'is invalid', user.errors[:current_password].join
   end
 
   test 'should add an error to current password when it is blank' do
     user = create_user
     refute user.update_with_password(password: 'pass4321',
-      password_confirmation: 'pass4321')
+                                     password_confirmation: 'pass4321')
     assert user.reload.valid_password?('12345678')
     assert_match "can't be blank", user.errors[:current_password].join
   end
@@ -179,28 +187,28 @@ class DatabaseAuthenticatableTest < ActiveSupport::TestCase
     user = UserWithValidation.create!(valid_attributes)
     user.save
     assert user.persisted?
-    refute user.update_with_password(username: "")
-    assert_match "usertest", user.reload.username
+    refute user.update_with_password(username: '')
+    assert_match 'usertest', user.reload.username
     assert_match "can't be blank", user.errors[:username].join
   end
 
   test 'should ignore password and its confirmation if they are blank' do
     user = create_user
-    assert user.update_with_password(current_password: '12345678', email: "new@example.com")
-    assert_equal "new@example.com", user.email
+    assert user.update_with_password(current_password: '12345678', email: 'new@example.com')
+    assert_equal 'new@example.com', user.email
   end
 
   test 'should not update password with invalid confirmation' do
     user = create_user
     refute user.update_with_password(current_password: '12345678',
-      password: 'pass4321', password_confirmation: 'other')
+                                     password: 'pass4321', password_confirmation: 'other')
     assert user.reload.valid_password?('12345678')
   end
 
   test 'should clean up password fields on failure' do
     user = create_user
     refute user.update_with_password(current_password: '12345678',
-      password: 'pass4321', password_confirmation: 'other')
+                                     password: 'pass4321', password_confirmation: 'other')
     assert user.password.blank?
     assert user.password_confirmation.blank?
   end
@@ -228,7 +236,7 @@ class DatabaseAuthenticatableTest < ActiveSupport::TestCase
     user = create_user
     refute user.destroy_with_password('other')
     assert user.persisted?
-    assert_match "is invalid", user.errors[:current_password].join
+    assert_match 'is invalid', user.errors[:current_password].join
   end
 
   test 'should not destroy user with blank password' do
@@ -287,23 +295,23 @@ class DatabaseAuthenticatableTest < ActiveSupport::TestCase
   end
 
   test 'downcase_keys with validation' do
-    User.create(email: "HEllO@example.com", password: "123456")
-    user = User.create(email: "HEllO@example.com", password: "123456")
+    User.create(email: 'HEllO@example.com', password: '123456')
+    user = User.create(email: 'HEllO@example.com', password: '123456')
     assert !user.valid?
   end
 
   test 'required_fields should be encryptable_password and the email field by default' do
-    assert_equal [
-      :encrypted_password,
-      :email
+    assert_equal %i[
+      encrypted_password
+      email
     ], Devise::Models::DatabaseAuthenticatable.required_fields(User)
   end
 
   test 'required_fields should be encryptable_password and the login when the login is on authentication_keys' do
     swap Devise, authentication_keys: [:login] do
-      assert_equal [
-        :encrypted_password,
-        :login
+      assert_equal %i[
+        encrypted_password
+        login
       ], Devise::Models::DatabaseAuthenticatable.required_fields(User)
     end
   end
