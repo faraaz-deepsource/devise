@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class TimeoutableTest < ActiveSupport::TestCase
-
   test 'should be expired' do
     assert new_user.timedout?(31.minutes.ago)
   end
@@ -18,7 +17,11 @@ class TimeoutableTest < ActiveSupport::TestCase
 
   test 'should use timeout_in method' do
     user = new_user
-    user.instance_eval { def timeout_in; 10.minutes end }
+    user.instance_eval do
+      def timeout_in
+        10.minutes
+      end
+    end
 
     assert user.timedout?(12.minutes.ago)
     refute user.timedout?(8.minutes.ago)
@@ -26,7 +29,11 @@ class TimeoutableTest < ActiveSupport::TestCase
 
   test 'should not be expired when timeout_in method returns nil' do
     user = new_user
-    user.instance_eval { def timeout_in; nil end }
+    user.instance_eval do
+      def timeout_in
+        nil
+      end
+    end
     refute user.timedout?(10.hours.ago)
   end
 
