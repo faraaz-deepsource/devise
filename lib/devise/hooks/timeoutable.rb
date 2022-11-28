@@ -22,14 +22,12 @@ Warden::Manager.after_set_user do |record, warden, options|
     proxy = Devise::Hooks::Proxy.new(warden)
 
     if !env['devise.skip_timeout'] &&
-        record.timedout?(last_request_at) &&
-        !proxy.remember_me_is_active?(record)
+       record.timedout?(last_request_at) &&
+       !proxy.remember_me_is_active?(record)
       Devise.sign_out_all_scopes ? proxy.sign_out : proxy.sign_out(scope)
       throw :warden, scope: scope, message: :timeout
     end
 
-    unless env['devise.skip_trackable']
-      warden.session(scope)['last_request_at'] = Time.now.utc.to_i
-    end
+    warden.session(scope)['last_request_at'] = Time.now.utc.to_i unless env['devise.skip_trackable']
   end
 end
