@@ -36,9 +36,9 @@ module Devise
   #    end
   class ParameterSanitizer
     DEFAULT_PERMITTED_ATTRIBUTES = {
-      sign_in: [:password, :remember_me],
-      sign_up: [:password, :password_confirmation],
-      account_update: [:password, :password_confirmation, :current_password]
+      sign_in: %i[password remember_me],
+      sign_up: %i[password password_confirmation],
+      account_update: %i[password password_confirmation current_password]
     }
 
     def initialize(resource_class, resource_name, params)
@@ -108,9 +108,7 @@ module Devise
     #
     # Returns nothing.
     def permit(action, keys: nil, except: nil, &block)
-      if block_given?
-        @permitted[action] = block
-      end
+      @permitted[action] = block if block_given?
 
       if keys.present?
         @permitted[action] ||= @auth_keys.dup
