@@ -13,9 +13,7 @@ class ActiveSupport::TestCase
 
   def assert_email_sent(address = nil, &block)
     assert_difference('ActionMailer::Base.deliveries.size', &block)
-    if address.present?
-      assert_equal address, ActionMailer::Base.deliveries.last['to'].to_s
-    end
+    assert_equal address, ActionMailer::Base.deliveries.last['to'].to_s if address.present?
   end
 
   def assert_email_not_sent(&block)
@@ -25,6 +23,6 @@ class ActiveSupport::TestCase
   def assert_raise_with_message(exception_klass, message, &block)
     exception = assert_raise exception_klass, &block
     assert_equal exception.message, message,
-      "The expected message was #{message} but your exception throwed #{exception.message}"
+                 "The expected message was #{message} but your exception throwed #{exception.message}"
   end
 end
