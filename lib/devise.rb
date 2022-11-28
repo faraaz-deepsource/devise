@@ -107,7 +107,7 @@ module Devise
 
   # The realm used in Http Basic Authentication.
   mattr_accessor :http_authentication_realm
-  @@http_authentication_realm = "Application"
+  @@http_authentication_realm = 'Application'
 
   # Email regex used to validate email formats. It asserts that there are no
   # @ symbols or whitespaces in either the localpart or the domain, and that
@@ -217,7 +217,7 @@ module Devise
 
   # Which formats should be treated as navigational.
   mattr_accessor :navigational_formats
-  @@navigational_formats = ["*/*", :html]
+  @@navigational_formats = ['*/*', :html]
 
   # When set to true, signing out a user signs out all other scopes.
   mattr_accessor :sign_out_all_scopes
@@ -231,13 +231,13 @@ module Devise
   # Defaults to ApplicationController. This should be set early
   # in the initialization process and should be set to a string.
   mattr_accessor :parent_controller
-  @@parent_controller = "ApplicationController"
+  @@parent_controller = 'ApplicationController'
 
   # The parent mailer all Devise mailers inherit from.
   # Defaults to ActionMailer::Base. This should be set early
   # in the initialization process and should be set to a string.
   mattr_accessor :parent_mailer
-  @@parent_mailer = "ActionMailer::Base"
+  @@parent_mailer = 'ActionMailer::Base'
 
   # The router Devise should use to generate routes. Defaults
   # to :main_app. Should be overridden by engines in order
@@ -298,7 +298,7 @@ module Devise
   @@sign_in_after_change_password = true
 
   def self.activerecord51? # :nodoc:
-    defined?(ActiveRecord) && ActiveRecord.gem_version >= Gem::Version.new("5.1.x")
+    defined?(ActiveRecord) && ActiveRecord.gem_version >= Gem::Version.new('5.1.x')
   end
 
   # Default way to set up Devise. Run rails generate devise_install to create
@@ -324,9 +324,7 @@ module Devise
 
   def self.ref(arg)
     # TODO: Remove AS::Dependencies usage when dropping support to Rails < 7.
-    if ActiveSupport::Dependencies.respond_to?(:reference)
-      ActiveSupport::Dependencies.reference(arg)
-    end
+    ActiveSupport::Dependencies.reference(arg) if ActiveSupport::Dependencies.respond_to?(:reference)
     Getter.new(arg)
   end
 
@@ -347,7 +345,7 @@ module Devise
   def self.mailer=(class_name)
     @@mailer_ref = ref(class_name)
   end
-  self.mailer = "Devise::Mailer"
+  self.mailer = 'Devise::Mailer'
 
   # Small method that adds a mapping to Devise.
   def self.add_mapping(resource, options)
@@ -403,13 +401,16 @@ module Devise
     if route = options[:route]
       case route
       when TrueClass
-        key, value = module_name, []
+        key = module_name
+        value = []
       when Symbol
-        key, value = route, []
+        key = route
+        value = []
       when Hash
-        key, value = route.keys.first, route.values.flatten
+        key = route.keys.first
+        value = route.values.flatten
       else
-        raise ArgumentError, ":route should be true, a Symbol or a Hash"
+        raise ArgumentError, ':route should be true, a Symbol or a Hash'
       end
 
       URL_HELPERS[key] ||= []
@@ -472,7 +473,7 @@ module Devise
 
   # A method used internally to complete the setup of warden manager after routes are loaded.
   # See lib/devise/rails/routes.rb - ActionDispatch::Routing::RouteSet#finalize_with_devise!
-  def self.configure_warden! #:nodoc:
+  def self.configure_warden! # :nodoc:
     @@warden_configured ||= begin
       warden_config.failure_app   = Devise::Delegator.new
       warden_config.default_scope = Devise.default_scope
@@ -507,6 +508,7 @@ module Devise
   # constant-time comparison algorithm to prevent timing attacks
   def self.secure_compare(a, b)
     return false if a.blank? || b.blank? || a.bytesize != b.bytesize
+
     l = a.unpack "C#{a.bytesize}"
 
     res = 0

@@ -30,6 +30,7 @@ module Devise
     # Force keys to be string to avoid injection on mongoid related database.
     def stringify_params(conditions)
       return conditions unless conditions.is_a?(Hash)
+
       conditions.each do |k, v|
         conditions[k] = v.to_s if param_requires_string_conversion?(v)
       end
@@ -37,7 +38,7 @@ module Devise
 
     private
 
-    def param_requires_string_conversion?(value)
+    def param_requires_string_conversion?(_value)
       true
     end
   end

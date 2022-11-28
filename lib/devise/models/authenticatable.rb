@@ -56,13 +56,14 @@ module Devise
     module Authenticatable
       extend ActiveSupport::Concern
 
-      UNSAFE_ATTRIBUTES_FOR_SERIALIZATION = [:encrypted_password, :reset_password_token, :reset_password_sent_at,
-        :remember_created_at, :sign_in_count, :current_sign_in_at, :last_sign_in_at, :current_sign_in_ip,
-        :last_sign_in_ip, :password_salt, :confirmation_token, :confirmed_at, :confirmation_sent_at,
-        :remember_token, :unconfirmed_email, :failed_attempts, :unlock_token, :locked_at]
+      UNSAFE_ATTRIBUTES_FOR_SERIALIZATION = %i[encrypted_password reset_password_token reset_password_sent_at
+                                               remember_created_at sign_in_count current_sign_in_at last_sign_in_at current_sign_in_ip
+                                               last_sign_in_ip password_salt confirmation_token confirmed_at confirmation_sent_at
+                                               remember_token unconfirmed_email failed_attempts unlock_token locked_at]
 
       include Devise::DeprecatedConstantAccessor
-      deprecate_constant "BLACKLIST_FOR_SERIALIZATION", "Devise::Models::Authenticatable::UNSAFE_ATTRIBUTES_FOR_SERIALIZATION"
+      deprecate_constant 'BLACKLIST_FOR_SERIALIZATION',
+                         'Devise::Models::Authenticatable::UNSAFE_ATTRIBUTES_FOR_SERIALIZATION'
 
       included do
         class_attribute :devise_modules, instance_writer: false
@@ -72,7 +73,7 @@ module Devise
         before_validation :strip_whitespace
       end
 
-      def self.required_fields(klass)
+      def self.required_fields(_klass)
         []
       end
 
@@ -98,8 +99,7 @@ module Devise
         :inactive
       end
 
-      def authenticatable_salt
-      end
+      def authenticatable_salt; end
 
       # Redefine serializable_hash in models for more secure defaults.
       # By default, it removes from the serializable model all attributes that
@@ -122,10 +122,10 @@ module Devise
       # Redefine inspect using serializable_hash, to ensure we don't accidentally
       # leak passwords into exceptions.
       def inspect
-        inspection = serializable_hash.collect do |k,v|
+        inspection = serializable_hash.collect do |k, v|
           "#{k}: #{respond_to?(:attribute_for_inspect) ? attribute_for_inspect(k) : v.inspect}"
         end
-        "#<#{self.class} #{inspection.join(", ")}>"
+        "#<#{self.class} #{inspection.join(', ')}>"
       end
 
       protected
@@ -231,8 +231,8 @@ module Devise
 
       module ClassMethods
         Devise::Models.config(self, :authentication_keys, :request_keys, :strip_whitespace_keys,
-          :case_insensitive_keys, :http_authenticatable, :params_authenticatable, :skip_session_storage,
-          :http_authentication_key)
+                              :case_insensitive_keys, :http_authenticatable, :params_authenticatable, :skip_session_storage,
+                              :http_authentication_key)
 
         def serialize_into_session(record)
           [record.to_key, record.authenticatable_salt]
@@ -244,13 +244,19 @@ module Devise
         end
 
         def params_authenticatable?(strategy)
-          params_authenticatable.is_a?(Array) ?
-            params_authenticatable.include?(strategy) : params_authenticatable
+          if params_authenticatable.is_a?(Array)
+            params_authenticatable.include?(strategy)
+          else
+            params_authenticatable
+          end
         end
 
         def http_authenticatable?(strategy)
-          http_authenticatable.is_a?(Array) ?
-            http_authenticatable.include?(strategy) : http_authenticatable
+          if http_authenticatable.is_a?(Array)
+            http_authenticatable.include?(strategy)
+          else
+            http_authenticatable
+          end
         end
 
         # Find first record based on conditions given (ie by the sign in form).
@@ -281,16 +287,16 @@ module Devise
         end
 
         # Find or initialize a record setting an error if it can't be found.
-        def find_or_initialize_with_error_by(attribute, value, error = :invalid) #:nodoc:
+        def find_or_initialize_with_error_by(attribute, value, error = :invalid) # :nodoc:
           find_or_initialize_with_errors([attribute], { attribute => value }, error)
         end
 
         # Find or initialize a record with group of attributes based on a list of required attributes.
-        def find_or_initialize_with_errors(required_attributes, attributes, error = :invalid) #:nodoc:
+        def find_or_initialize_with_errors(required_attributes, attributes, error = :invalid) # :nodoc:
           attributes.try(:permit!)
           attributes = attributes.to_h.with_indifferent_access
                                  .slice(*required_attributes)
-                                 .delete_if { |key, value| value.blank? }
+                                 .delete_if { |_key, value| value.blank? }
 
           if attributes.size == required_attributes.size
             record = find_first_by_auth_conditions(attributes) and return record
