@@ -8,7 +8,7 @@ module Devise
       end
 
       def message
-        "The following attribute(s) is (are) missing on your model: #{@attributes.join(", ")}"
+        "The following attribute(s) is (are) missing on your model: #{@attributes.join(', ')}"
       end
     end
 
@@ -28,7 +28,7 @@ module Devise
     # To add the class methods you need to have a module ClassMethods defined
     # inside the given class.
     #
-    def self.config(mod, *accessors) #:nodoc:
+    def self.config(mod, *accessors) # :nodoc:
       class << mod; attr_accessor :available_configs; end
       mod.available_configs = accessors
 
@@ -63,9 +63,7 @@ module Devise
         end
       end
 
-      if failed_attributes.any?
-        fail Devise::Models::MissingAttribute.new(failed_attributes)
-      end
+      raise Devise::Models::MissingAttribute, failed_attributes if failed_attributes.any?
     end
 
     # Include the chosen devise modules in your model:
@@ -80,7 +78,7 @@ module Devise
       options = modules.extract_options!.dup
 
       selected_modules = modules.map(&:to_sym).uniq.sort_by do |s|
-        Devise::ALL.index(s) || -1  # follow Devise::ALL order
+        Devise::ALL.index(s) || -1 # follow Devise::ALL order
       end
 
       devise_modules_hook! do
@@ -89,14 +87,15 @@ module Devise
         selected_modules.each do |m|
           mod = Devise::Models.const_get(m.to_s.classify)
 
-          if mod.const_defined?("ClassMethods")
-            class_mod = mod.const_get("ClassMethods")
+          if mod.const_defined?('ClassMethods')
+            class_mod = mod.const_get('ClassMethods')
             extend class_mod
 
             if class_mod.respond_to?(:available_configs)
               available_configs = class_mod.available_configs
               available_configs.each do |config|
                 next unless options.key?(config)
+
                 send(:"#{config}=", options.delete(config))
               end
             end
