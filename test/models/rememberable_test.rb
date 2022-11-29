@@ -69,11 +69,11 @@ class RememberableTest < ActiveSupport::TestCase
   test 'serialize from cookie should return nil with invalid datetime' do
     user = create_user
     user.remember_me!
-    assert_nil User.serialize_from_cookie(user.to_key, user.authenticatable_salt, "2013")
+    assert_nil User.serialize_from_cookie(user.to_key, user.authenticatable_salt, '2013')
   end
 
   test 'serialize from cookie should return nil if no resource is found' do
-    assert_nil resource_class.serialize_from_cookie([0], "123", Time.now.utc)
+    assert_nil resource_class.serialize_from_cookie([0], '123', Time.now.utc)
   end
 
   test 'serialize from cookie should return nil if no timestamp' do
@@ -98,7 +98,7 @@ class RememberableTest < ActiveSupport::TestCase
   test 'serialize from cookie me return nil if is a valid resource with invalid token' do
     user = create_user
     user.remember_me!
-    assert_nil User.serialize_from_cookie(user.to_key, "123", Time.now.utc)
+    assert_nil User.serialize_from_cookie(user.to_key, '123', Time.now.utc)
   end
 
   test 'raises a RuntimeError if the user does not implements a rememberable value' do
@@ -106,23 +106,31 @@ class RememberableTest < ActiveSupport::TestCase
     assert_raise(RuntimeError) { user.rememberable_value }
 
     user_with_remember_token = User.new
-    def user_with_remember_token.remember_token; '123-token'; end
+    def user_with_remember_token.remember_token
+      '123-token'
+    end
     assert_equal '123-token', user_with_remember_token.rememberable_value
 
     user_with_salt = User.new
-    def user_with_salt.authenticatable_salt; '123-salt'; end
+    def user_with_salt.authenticatable_salt
+      '123-salt'
+    end
     assert_equal '123-salt', user_with_salt.rememberable_value
   end
 
   test 'raises a RuntimeError if authenticatable_salt is nil or empty' do
     user = User.new
-    def user.authenticatable_salt; nil; end
+    def user.authenticatable_salt
+      nil
+    end
     assert_raise RuntimeError do
       user.rememberable_value
     end
 
     user = User.new
-    def user.authenticatable_salt; ""; end
+    def user.authenticatable_salt
+      ''
+    end
     assert_raise RuntimeError do
       user.rememberable_value
     end
