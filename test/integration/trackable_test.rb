@@ -3,13 +3,13 @@
 require 'test_helper'
 
 class TrackableHooksTest < Devise::IntegrationTest
-  test "trackable should not run model validations" do
+  test 'trackable should not run model validations' do
     sign_in_as_user
 
     refute User.validations_performed
   end
 
-  test "current and last sign in timestamps are updated on each sign in" do
+  test 'current and last sign in timestamps are updated on each sign in' do
     user = create_user
     assert_nil user.current_sign_in_at
     assert_nil user.last_sign_in_at
@@ -32,7 +32,7 @@ class TrackableHooksTest < Devise::IntegrationTest
     assert user.current_sign_in_at > user.last_sign_in_at
   end
 
-  test "current and last sign in remote ip are updated on each sign in" do
+  test 'current and last sign in remote ip are updated on each sign in' do
     user = create_user
     assert_nil user.current_sign_in_ip
     assert_nil user.last_sign_in_ip
@@ -40,11 +40,11 @@ class TrackableHooksTest < Devise::IntegrationTest
     sign_in_as_user
     user.reload
 
-    assert_equal "127.0.0.1", user.current_sign_in_ip
-    assert_equal "127.0.0.1", user.last_sign_in_ip
+    assert_equal '127.0.0.1', user.current_sign_in_ip
+    assert_equal '127.0.0.1', user.last_sign_in_ip
   end
 
-  test "current and last sign in remote ip returns original ip behind a non transparent proxy" do
+  test 'current and last sign in remote ip returns original ip behind a non transparent proxy' do
     user = create_user
 
     arbitrary_ip = '200.121.1.69'
@@ -56,7 +56,7 @@ class TrackableHooksTest < Devise::IntegrationTest
     assert_equal arbitrary_ip, user.last_sign_in_ip
   end
 
-  test "increase sign in count" do
+  test 'increase sign in count' do
     user = create_user
     assert_equal 0, user.sign_in_count
 
@@ -70,7 +70,7 @@ class TrackableHooksTest < Devise::IntegrationTest
     assert_equal 2, user.sign_in_count
   end
 
-  test "does not update anything if user has signed out along the way" do
+  test 'does not update anything if user has signed out along the way' do
     swap Devise, allow_unconfirmed_access_for: 0.days do
       user = create_user(confirm: false)
       sign_in_as_user
@@ -81,7 +81,7 @@ class TrackableHooksTest < Devise::IntegrationTest
     end
   end
 
-  test "do not track if devise.skip_trackable is set" do
+  test 'do not track if devise.skip_trackable is set' do
     user = create_user
     sign_in_as_user do
       header 'devise.skip_trackable', '1'
@@ -96,5 +96,4 @@ class TrackableHooksTest < Devise::IntegrationTest
     user.reload
     assert_equal 1, user.sign_in_count
   end
-
 end
