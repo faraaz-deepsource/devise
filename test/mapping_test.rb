@@ -14,23 +14,23 @@ class MappingTest < ActiveSupport::TestCase
     mapping = Devise.mappings[:user]
     assert_equal User,                mapping.to
     assert_equal User.devise_modules, mapping.modules
-    assert_equal "users",             mapping.scoped_path
+    assert_equal 'users',             mapping.scoped_path
     assert_equal :user,               mapping.singular
-    assert_equal "users",             mapping.path
-    assert_equal "/users",            mapping.fullpath
+    assert_equal 'users',             mapping.path
+    assert_equal '/users',            mapping.fullpath
   end
 
   test 'store options with namespace' do
     mapping = Devise.mappings[:publisher_account]
     assert_equal Admin,                 mapping.to
-    assert_equal "publisher/accounts",  mapping.scoped_path
+    assert_equal 'publisher/accounts',  mapping.scoped_path
     assert_equal :publisher_account,    mapping.singular
-    assert_equal "accounts",            mapping.path
-    assert_equal "/publisher/accounts", mapping.fullpath
+    assert_equal 'accounts',            mapping.path
+    assert_equal '/publisher/accounts', mapping.fullpath
   end
 
   test 'allows path to be given' do
-    assert_equal "admin_area", Devise.mappings[:admin].path
+    assert_equal 'admin_area', Devise.mappings[:admin].path
   end
 
   test 'allows to skip all routes' do
@@ -44,15 +44,15 @@ class MappingTest < ActiveSupport::TestCase
   test 'allows custom sign_out_via to be given' do
     assert_equal :delete,          Devise.mappings[:sign_out_via_delete].sign_out_via
     assert_equal :post,            Devise.mappings[:sign_out_via_post].sign_out_via
-    assert_equal [:delete, :post], Devise.mappings[:sign_out_via_delete_or_post].sign_out_via
+    assert_equal %i[delete post], Devise.mappings[:sign_out_via_delete_or_post].sign_out_via
   end
 
   test 'allows custom singular to be given' do
-    assert_equal "accounts", Devise.mappings[:manager].path
+    assert_equal 'accounts', Devise.mappings[:manager].path
   end
 
   test 'has strategies depending on the model declaration' do
-    assert_equal [:rememberable, :database_authenticatable], Devise.mappings[:user].strategies
+    assert_equal %i[rememberable database_authenticatable], Devise.mappings[:user].strategies
     assert_equal [:database_authenticatable], Devise.mappings[:admin].strategies
   end
 
@@ -64,7 +64,7 @@ class MappingTest < ActiveSupport::TestCase
   test 'find scope for a given object' do
     assert_equal :user, Devise::Mapping.find_scope!(User)
     assert_equal :user, Devise::Mapping.find_scope!(:user)
-    assert_equal :user, Devise::Mapping.find_scope!("user")
+    assert_equal :user, Devise::Mapping.find_scope!('user')
     assert_equal :user, Devise::Mapping.find_scope!(User.new)
   end
 
@@ -75,7 +75,9 @@ class MappingTest < ActiveSupport::TestCase
 
   test 'find scope uses devise_scope' do
     user = User.new
-    def user.devise_scope; :special_scope; end
+    def user.devise_scope
+      :special_scope
+    end
     assert_equal :special_scope, Devise::Mapping.find_scope!(user)
   end
 
