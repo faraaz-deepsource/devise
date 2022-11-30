@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-unless defined?(DEVISE_ORM)
-  DEVISE_ORM = (ENV["DEVISE_ORM"] || :active_record).to_sym
-end
+DEVISE_ORM = (ENV['DEVISE_ORM'] || :active_record).to_sym unless defined?(DEVISE_ORM)
 
 module Devise
   module Test
@@ -43,5 +41,5 @@ module Devise
 end
 
 # Set up gems listed in the Gemfile.
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../../../Gemfile', __FILE__)
+ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../../../Gemfile', __dir__)
 require 'bundler/setup' if File.exist?(ENV['BUNDLE_GEMFILE'])
