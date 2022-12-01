@@ -79,6 +79,7 @@ module Devise
       #
       def sign_out(resource_or_scope = nil)
         return sign_out_all_scopes unless resource_or_scope
+
         scope = Devise::Mapping.find_scope!(resource_or_scope)
         user = warden.user(scope: scope, run_callbacks: false) # If there is no user
 
@@ -115,7 +116,7 @@ module Devise
         session.keys.grep(/^devise\./).each { |k| session.delete(k) }
       end
 
-      alias :expire_data_after_sign_out! :expire_data_after_sign_in!
+      alias expire_data_after_sign_out! expire_data_after_sign_in!
     end
   end
 end

@@ -6,7 +6,7 @@ module Devise
     class Base < ::Warden::Strategies::Base
       # Whenever CSRF cannot be verified, we turn off any kind of storage
       def store?
-        !env["devise.skip_storage"]
+        !env['devise.skip_storage']
       end
 
       # Checks if a valid scope was given for devise and find mapping based on this scope.
@@ -14,6 +14,7 @@ module Devise
         @mapping ||= begin
           mapping = Devise.mappings[scope]
           raise "Could not find mapping for #{scope}" unless mapping
+
           mapping
         end
       end
