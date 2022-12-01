@@ -7,7 +7,7 @@ module Devise
     module Registerable
       extend ActiveSupport::Concern
 
-      def self.required_fields(klass)
+      def self.required_fields(_klass)
         []
       end
 
@@ -18,7 +18,7 @@ module Devise
         #
         # By default discards all information sent by the session by calling
         # new with params.
-        def new_with_session(params, session)
+        def new_with_session(params, _session)
           new(params)
         end
 

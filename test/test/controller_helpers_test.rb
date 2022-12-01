@@ -6,13 +6,13 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
   tests UsersController
   include Devise::Test::ControllerHelpers
 
-  test "redirects if attempting to access a page unauthenticated" do
+  test 'redirects if attempting to access a page unauthenticated' do
     get :index
     assert_redirected_to new_user_session_path
-    assert_equal "You need to sign in or sign up before continuing.", flash[:alert]
+    assert_equal 'You need to sign in or sign up before continuing.', flash[:alert]
   end
 
-  test "redirects if attempting to access a page with an unconfirmed account" do
+  test 'redirects if attempting to access a page with an unconfirmed account' do
     swap Devise, allow_unconfirmed_access_for: 0.days do
       user = create_user
       assert !user.active_for_authentication?
@@ -23,7 +23,7 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     end
   end
 
-  test "returns nil if accessing current_user with an unconfirmed account" do
+  test 'returns nil if accessing current_user with an unconfirmed account' do
     swap Devise, allow_unconfirmed_access_for: 0.days do
       user = create_user
       assert !user.active_for_authentication?
@@ -34,7 +34,7 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     end
   end
 
-  test "does not redirect with valid user" do
+  test 'does not redirect with valid user' do
     user = create_user
     user.confirm
 
@@ -43,7 +43,7 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     assert_response :success
   end
 
-  test "does not redirect with valid user after failed first attempt" do
+  test 'does not redirect with valid user after failed first attempt' do
     get :index
     assert_response :redirect
 
@@ -55,7 +55,7 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     assert_response :success
   end
 
-  test "redirects if valid user signed out" do
+  test 'redirects if valid user signed out' do
     user = create_user
     user.confirm
 
@@ -67,7 +67,7 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     assert_redirected_to new_user_session_path
   end
 
-  test "respects custom failure app" do
+  test 'respects custom failure app' do
     custom_failure_app = Class.new(Devise::FailureApp) do
       def redirect
         self.status = 300
@@ -80,32 +80,33 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     end
   end
 
-  test "passes given headers from the failure app to the response" do
+  test 'passes given headers from the failure app to the response' do
     custom_failure_app = Class.new(Devise::FailureApp) do
       def respond
         self.status = 401
-        self.response.headers["CUSTOMHEADER"] = 1
+        response.headers['CUSTOMHEADER'] = 1
       end
     end
 
     swap Devise.warden_config, failure_app: custom_failure_app do
       sign_in create_user
       get :index
-      assert_equal 1, @response.headers["CUSTOMHEADER"]
+      assert_equal 1, @response.headers['CUSTOMHEADER']
     end
   end
 
-  test "returns the body of a failure app" do
+  test 'returns the body of a failure app' do
     get :index
 
     if Devise::Test.rails71_and_up?
       assert_empty response.body
     else
-      assert_equal "<html><body>You are being <a href=\"http://test.host/users/sign_in\">redirected</a>.</body></html>", response.body
+      assert_equal '<html><body>You are being <a href="http://test.host/users/sign_in">redirected</a>.</body></html>',
+                   response.body
     end
   end
 
-  test "returns the content type of a failure app" do
+  test 'returns the content type of a failure app' do
     get :index, params: { format: :json }
 
     if Devise::Test.rails6_and_up?
@@ -115,59 +116,53 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
     end
   end
 
-  test "defined Warden after_authentication callback should not be called when sign_in is called" do
-    begin
-      Warden::Manager.after_authentication do |user, auth, opts|
-        flunk "callback was called while it should not"
-      end
-
-      user = create_user
-      user.confirm
-      sign_in user
-    ensure
-      Warden::Manager._after_set_user.pop
+  test 'defined Warden after_authentication callback should not be called when sign_in is called' do
+    Warden::Manager.after_authentication do |_user, _auth, _opts|
+      flunk 'callback was called while it should not'
     end
+
+    user = create_user
+    user.confirm
+    sign_in user
+  ensure
+    Warden::Manager._after_set_user.pop
   end
 
-  test "defined Warden before_logout callback should not be called when sign_out is called" do
-    begin
-      Warden::Manager.before_logout do |user, auth, opts|
-        flunk "callback was called while it should not"
-      end
-      user = create_user
-      user.confirm
-
-      sign_in user
-      sign_out user
-    ensure
-      Warden::Manager._before_logout.pop
+  test 'defined Warden before_logout callback should not be called when sign_out is called' do
+    Warden::Manager.before_logout do |_user, _auth, _opts|
+      flunk 'callback was called while it should not'
     end
+    user = create_user
+    user.confirm
+
+    sign_in user
+    sign_out user
+  ensure
+    Warden::Manager._before_logout.pop
   end
 
-  test "before_failure call should work" do
-    begin
-      executed = false
-      Warden::Manager.before_failure do |env,opts|
-        executed = true
-      end
-
-      user = create_user
-      sign_in user
-
-      get :index
-      assert executed
-    ensure
-      Warden::Manager._before_failure.pop
+  test 'before_failure call should work' do
+    executed = false
+    Warden::Manager.before_failure do |_env, _opts|
+      executed = true
     end
+
+    user = create_user
+    sign_in user
+
+    get :index
+    assert executed
+  ensure
+    Warden::Manager._before_failure.pop
   end
 
-  test "allows to sign in with different users" do
+  test 'allows to sign in with different users' do
     first_user = create_user
     first_user.confirm
 
     sign_in first_user
     get :index
-    assert_match /User ##{first_user.id}/, @response.body
+    assert_match(/User ##{first_user.id}/, @response.body)
     sign_out first_user
 
     second_user = create_user
@@ -175,19 +170,19 @@ class TestControllerHelpersTest < Devise::ControllerTestCase
 
     sign_in second_user
     get :index
-    assert_match /User ##{second_user.id}/, @response.body
+    assert_match(/User ##{second_user.id}/, @response.body)
   end
 
-  test "creates a new warden proxy if the request object has changed" do
+  test 'creates a new warden proxy if the request object has changed' do
     old_warden_proxy = warden
 
     @request = if Devise::Test.rails51? || Devise::Test.rails52_and_up?
-      ActionController::TestRequest.create(Class.new) # needs a "controller class"
-    elsif Devise::Test.rails5?
-      ActionController::TestRequest.create
-    else
-      ActionController::TestRequest.new
-    end
+                 ActionController::TestRequest.create(Class.new) # needs a "controller class"
+               elsif Devise::Test.rails5?
+                 ActionController::TestRequest.create
+               else
+                 ActionController::TestRequest.new
+               end
 
     new_warden_proxy = warden
 
@@ -212,7 +207,8 @@ class TestControllerHelpersForStreamingControllerTest < Devise::ControllerTestCa
     if Devise::Test.rails71_and_up?
       assert_empty response.body
     else
-      assert_equal "<html><body>You are being <a href=\"http://test.host/users/sign_in\">redirected</a>.</body></html>", response.body
+      assert_equal '<html><body>You are being <a href="http://test.host/users/sign_in">redirected</a>.</body></html>',
+                   response.body
     end
   end
 end
