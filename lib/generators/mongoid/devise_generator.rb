@@ -9,7 +9,7 @@ module Mongoid
       include Devise::Generators::OrmHelpers
 
       def generate_model
-        invoke "mongoid:model", [name] unless model_exists? && behavior == :invoke
+        invoke 'mongoid:model', [name] unless model_exists? && behavior == :invoke
       end
 
       def inject_field_types
@@ -21,7 +21,7 @@ module Mongoid
       end
 
       def migration_data
-<<RUBY
+        <<RUBY
   ## Database authenticatable
   field :email,              type: String, default: ""
   field :encrypted_password, type: String, default: ""

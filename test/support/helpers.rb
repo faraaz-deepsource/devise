@@ -3,13 +3,13 @@
 require 'active_support/test_case'
 
 class ActiveSupport::TestCase
-  VALID_AUTHENTICATION_TOKEN = 'AbCdEfGhIjKlMnOpQrSt'.freeze
+  VALID_AUTHENTICATION_TOKEN = 'AbCdEfGhIjKlMnOpQrSt'
 
   def setup_mailer
     ActionMailer::Base.deliveries = []
   end
 
-  def store_translations(locale, translations, &block)
+  def store_translations(locale, translations)
     # Calling 'available_locales' before storing the translations to ensure
     # that the I18n backend will be initialized before we store our custom
     # translations, so they will always override the translations for the
@@ -28,7 +28,7 @@ class ActiveSupport::TestCase
   end
 
   def valid_attributes(attributes = {})
-    { username: "usertest",
+    { username: 'usertest',
       email: generate_unique_email,
       password: '12345678',
       password_confirmation: '12345678' }.update(attributes)
