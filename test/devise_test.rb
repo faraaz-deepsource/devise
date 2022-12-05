@@ -5,29 +5,31 @@ require 'test_helper'
 module Devise
   def self.yield_and_restore
     @@warden_configured = nil
-    c, b = @@warden_config, @@warden_config_blocks
+    c = @@warden_config
+    b = @@warden_config_blocks
     yield
   ensure
-    @@warden_config, @@warden_config_blocks = c, b
+    @@warden_config = c
+    @@warden_config_blocks = b
   end
 end
 
 class DeviseTest < ActiveSupport::TestCase
   test 'bcrypt on the class' do
-    password = "super secret"
-    klass    = Struct.new(:pepper, :stretches).new("blahblah", 2)
+    password = 'super secret'
+    klass    = Struct.new(:pepper, :stretches).new('blahblah', 2)
     hash     = Devise::Encryptor.digest(klass, password)
     assert_equal ::BCrypt::Password.create(hash), hash
 
-    klass    = Struct.new(:pepper, :stretches).new("bla", 2)
+    klass    = Struct.new(:pepper, :stretches).new('bla', 2)
     hash     = Devise::Encryptor.digest(klass, password)
     assert_not_equal ::BCrypt::Password.new(hash), hash
   end
 
   test 'model options can be configured through Devise' do
-    swap Devise, allow_unconfirmed_access_for: 113, pepper: "foo" do
+    swap Devise, allow_unconfirmed_access_for: 113, pepper: 'foo' do
       assert_equal 113, Devise.allow_unconfirmed_access_for
-      assert_equal "foo", Devise.pepper
+      assert_equal 'foo', Devise.pepper
     end
   end
 
@@ -60,7 +62,7 @@ class DeviseTest < ActiveSupport::TestCase
       executed = 0
 
       3.times do
-        Devise.warden { |config| executed += 1 }
+        Devise.warden { |_config| executed += 1 }
       end
 
       Devise.configure_warden!
@@ -87,17 +89,18 @@ class DeviseTest < ActiveSupport::TestCase
   end
 
   test 'should complain when comparing empty or different sized passes' do
-    [nil, ""].each do |empty|
-      refute Devise.secure_compare(empty, "something")
-      refute Devise.secure_compare("something", empty)
+    [nil, ''].each do |empty|
+      refute Devise.secure_compare(empty, 'something')
+      refute Devise.secure_compare('something', empty)
       refute Devise.secure_compare(empty, empty)
     end
-    refute Devise.secure_compare("size_1", "size_four")
+    refute Devise.secure_compare('size_1', 'size_four')
   end
 
   test 'Devise.email_regexp should match valid email addresses' do
-    valid_emails = ["test@example.com", "jo@jo.co", "f4$_m@you.com", "testing.example@example.com.ua", "test@tt", "test@valid---domain.com"]
-    non_valid_emails = ["rex", "test user@example.com", "test_user@example server.com"]
+    valid_emails = ['test@example.com', 'jo@jo.co', 'f4$_m@you.com', 'testing.example@example.com.ua', 'test@tt',
+                    'test@valid---domain.com']
+    non_valid_emails = ['rex', 'test user@example.com', 'test_user@example server.com']
 
     valid_emails.each do |email|
       assert_match Devise.email_regexp, email
