@@ -13,12 +13,12 @@ class RememberMeTest < Devise::IntegrationTest
 
   def generate_signed_cookie(raw_cookie)
     request = if Devise::Test.rails51? || Devise::Test.rails52_and_up?
-      ActionController::TestRequest.create(Class.new) # needs a "controller class"
-    elsif Devise::Test.rails5?
-      ActionController::TestRequest.create
-    else
-      ActionController::TestRequest.new
-    end
+                ActionController::TestRequest.create(Class.new) # needs a "controller class"
+              elsif Devise::Test.rails5?
+                ActionController::TestRequest.create
+              else
+                ActionController::TestRequest.new
+              end
     request.cookie_jar.signed['raw_cookie'] = raw_cookie
     request.cookie_jar['raw_cookie']
   end
@@ -28,14 +28,14 @@ class RememberMeTest < Devise::IntegrationTest
   end
 
   def cookie_expires(key)
-    cookie  = response.headers["Set-Cookie"].split("\n").grep(/^#{key}/).first
-    expires = cookie.split(";").map(&:strip).grep(/^expires=/).first
+    cookie  = response.headers['Set-Cookie'].split("\n").grep(/^#{key}/).first
+    expires = cookie.split(';').map(&:strip).grep(/^expires=/).first
     Time.parse(expires).utc
   end
 
   test 'do not remember the user if they have not checked remember me option' do
     sign_in_as_user
-    assert_nil request.cookies["remember_user_cookie"]
+    assert_nil request.cookies['remember_user_cookie']
   end
 
   test 'handle unverified requests gets rid of caches' do
@@ -45,7 +45,7 @@ class RememberMeTest < Devise::IntegrationTest
 
       create_user_and_remember
       post exhibit_user_url(1)
-      assert_equal "User is not authenticated", response.body
+      assert_equal 'User is not authenticated', response.body
       refute warden.authenticated?(:user)
     end
   end
@@ -56,9 +56,9 @@ class RememberMeTest < Devise::IntegrationTest
       assert request.session[:_csrf_token]
 
       post user_session_path, params: {
-          authenticity_token: "oops",
-          user: { email: "jose.valim@gmail.com", password: "123456", remember_me: "1" }
-        }
+        authenticity_token: 'oops',
+        user: { email: 'jose.valim@gmail.com', password: '123456', remember_me: '1' }
+      }
       refute warden.authenticated?(:user)
       refute request.cookies['remember_user_token']
     end
@@ -73,27 +73,25 @@ class RememberMeTest < Devise::IntegrationTest
     # We test this by asserting the cookie is not sent after the redirect
     # since we changed the domain. This is the only difference with the
     # previous test.
-    swap Devise, rememberable_options: { domain: "omg.somewhere.com" } do
+    swap Devise, rememberable_options: { domain: 'omg.somewhere.com' } do
       sign_in_as_user remember_me: true
-      assert_nil request.cookies["remember_user_token"]
+      assert_nil request.cookies['remember_user_token']
     end
   end
 
   test 'generate remember token with a custom key' do
-    swap Devise, rememberable_options: { key: "v1lat_token" } do
+    swap Devise, rememberable_options: { key: 'v1lat_token' } do
       sign_in_as_user remember_me: true
-      assert request.cookies["v1lat_token"]
+      assert request.cookies['v1lat_token']
     end
   end
 
   test 'generate remember token after sign in setting session options' do
-    begin
-      Rails.configuration.session_options[:domain] = "omg.somewhere.com"
-      sign_in_as_user remember_me: true
-      assert_nil request.cookies["remember_user_token"]
-    ensure
-      Rails.configuration.session_options.delete(:domain)
-    end
+    Rails.configuration.session_options[:domain] = 'omg.somewhere.com'
+    sign_in_as_user remember_me: true
+    assert_nil request.cookies['remember_user_token']
+  ensure
+    Rails.configuration.session_options.delete(:domain)
   end
 
   test 'remember the user before sign in' do
@@ -200,8 +198,8 @@ class RememberMeTest < Devise::IntegrationTest
 
   test 'changing user password expires remember me token' do
     user = create_user_and_remember
-    user.password = "another_password"
-    user.password_confirmation = "another_password"
+    user.password = 'another_password'
+    user.password_confirmation = 'another_password'
     user.save!
 
     get users_path

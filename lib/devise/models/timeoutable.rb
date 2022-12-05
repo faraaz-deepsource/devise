@@ -22,7 +22,7 @@ module Devise
     module Timeoutable
       extend ActiveSupport::Concern
 
-      def self.required_fields(klass)
+      def self.required_fields(_klass)
         []
       end
 
@@ -34,8 +34,6 @@ module Devise
       def timeout_in
         self.class.timeout_in
       end
-
-      private
 
       module ClassMethods
         Devise::Models.config(self, :timeout_in)
