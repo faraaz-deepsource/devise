@@ -4,11 +4,11 @@ require 'test_helper'
 
 class DeviseHelperTest < Devise::IntegrationTest
   setup do
-    model_labels = { models: { user: "the user" } }
+    model_labels = { models: { user: 'the user' } }
     translations = {
       errors: { messages: { not_saved: {
-        one: "Can't save %{resource} because of 1 error",
-        other: "Can't save %{resource} because of %{count} errors",
+        one: "Can't save %<resource>s because of 1 error",
+        other: "Can't save %<resource>s because of %<count>s errors"
       } } },
       activerecord: model_labels,
       mongoid: model_labels
@@ -36,7 +36,10 @@ class DeviseHelperTest < Devise::IntegrationTest
   test 'test errors.messages.not_saved with multiple errors from i18n' do
     # Dirty tracking behavior prevents email validations from being applied:
     #    https://github.com/mongoid/mongoid/issues/756
-    (pending "Fails on Mongoid < 2.1"; break) if defined?(Mongoid) && Mongoid::VERSION.to_f < 2.1
+    if defined?(Mongoid) && Mongoid::VERSION.to_f < 2.1
+      (pending 'Fails on Mongoid < 2.1'
+       break)
+    end
 
     get new_user_registration_path
 
