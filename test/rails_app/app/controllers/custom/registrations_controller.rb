@@ -2,19 +2,19 @@
 
 class Custom::RegistrationsController < Devise::RegistrationsController
   def new
-    super do |resource|
+    super do |_resource|
       @new_block_called = true
     end
   end
 
   def create
-    super do |resource|
+    super do |_resource|
       @create_block_called = true
     end
   end
 
   def update
-    super do |resource|
+    super do |_resource|
       @update_block_called = true
     end
   end

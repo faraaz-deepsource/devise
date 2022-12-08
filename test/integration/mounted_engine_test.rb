@@ -6,10 +6,12 @@ module MyMountableEngine
   class Engine < ::Rails::Engine
     isolate_namespace MyMountableEngine
   end
+
   class TestsController < ActionController::Base
     def index
       render plain: 'Root test successful'
     end
+
     def inner_route
       render plain: 'Inner route test successful'
     end
@@ -49,7 +51,6 @@ class AuthenticatedMountedEngineTest < Devise::IntegrationTest
     assert_contain 'Root test successful'
   end
 
-
   test 'renders a inner route of the mounted engine when authenticated' do
     sign_in_as_user
     get '/mountable_engine/test'
@@ -60,7 +61,7 @@ class AuthenticatedMountedEngineTest < Devise::IntegrationTest
 
   test 'respond properly to a non existing route of the mounted engine' do
     sign_in_as_user
-    
+
     assert_raise ActionController::RoutingError do
       get '/mountable_engine/non-existing-route'
     end
