@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class ConfirmableTest < ActiveSupport::TestCase
-
   def setup
     setup_mailer
   end
@@ -54,7 +53,7 @@ class ConfirmableTest < ActiveSupport::TestCase
     assert_blank user.errors[:email]
 
     refute user.confirm
-    assert_equal "was already confirmed, please try signing in", user.errors[:email].join
+    assert_equal 'was already confirmed, please try signing in', user.errors[:email].join
   end
 
   test 'should find and confirm a user automatically based on the raw token' do
@@ -68,7 +67,7 @@ class ConfirmableTest < ActiveSupport::TestCase
   test 'should return a new record with errors when a invalid token is given' do
     confirmed_user = User.confirm_by_token('invalid_confirmation_token')
     refute confirmed_user.persisted?
-    assert_equal "is invalid", confirmed_user.errors[:confirmation_token].join
+    assert_equal 'is invalid', confirmed_user.errors[:confirmation_token].join
   end
 
   test 'should return a new record with errors when a blank token is given' do
@@ -101,7 +100,7 @@ class ConfirmableTest < ActiveSupport::TestCase
     user.save
     confirmed_user = User.confirm_by_token(user.raw_confirmation_token)
     assert confirmed_user.confirmed?
-    assert_equal "was already confirmed, please try signing in", confirmed_user.errors[:email].join
+    assert_equal 'was already confirmed, please try signing in', confirmed_user.errors[:email].join
   end
 
   test 'should show error when a token has already been used' do
@@ -111,12 +110,12 @@ class ConfirmableTest < ActiveSupport::TestCase
     assert user.reload.confirmed?
 
     confirmed_user = User.confirm_by_token(raw)
-    assert_equal "was already confirmed, please try signing in", confirmed_user.errors[:email].join
+    assert_equal 'was already confirmed, please try signing in', confirmed_user.errors[:email].join
   end
 
   test 'should send confirmation instructions by email' do
-    assert_email_sent "mynewuser@example.com" do
-      create_user email: "mynewuser@example.com"
+    assert_email_sent 'mynewuser@example.com' do
+      create_user email: 'mynewuser@example.com'
     end
   end
 
@@ -164,14 +163,14 @@ class ConfirmableTest < ActiveSupport::TestCase
   end
 
   test 'should return a new user if no email was found' do
-    confirmation_user = User.send_confirmation_instructions(email: "invalid@example.com")
+    confirmation_user = User.send_confirmation_instructions(email: 'invalid@example.com')
     refute confirmation_user.persisted?
   end
 
   test 'should add error to new user email if no email was found' do
-    confirmation_user = User.send_confirmation_instructions(email: "invalid@example.com")
+    confirmation_user = User.send_confirmation_instructions(email: 'invalid@example.com')
     assert confirmation_user.errors[:email]
-    assert_equal "not found", confirmation_user.errors[:email].join
+    assert_equal 'not found', confirmation_user.errors[:email].join
   end
 
   test 'should send email instructions for the user confirm its email' do
@@ -183,7 +182,11 @@ class ConfirmableTest < ActiveSupport::TestCase
 
   test 'should always have confirmation token when email is sent' do
     user = new_user
-    user.instance_eval { def confirmation_required?; false end }
+    user.instance_eval do
+      def confirmation_required?
+        false
+      end
+    end
     user.save
     user.send_confirmation_instructions
     assert_not_nil user.reload.confirmation_token
@@ -285,7 +288,11 @@ class ConfirmableTest < ActiveSupport::TestCase
 
   test 'should be active without confirmation when confirmation is not required' do
     user = create_user
-    user.instance_eval { def confirmation_required?; false end }
+    user.instance_eval do
+      def confirmation_required?
+        false
+      end
+    end
     user.confirmation_sent_at = nil
     user.save
     assert user.reload.active_for_authentication?
@@ -294,7 +301,11 @@ class ConfirmableTest < ActiveSupport::TestCase
   test 'should not break when a user tries to reset their password in the case where confirmation is not required and confirm_within is set' do
     swap Devise, confirm_within: 3.days do
       user = create_user
-      user.instance_eval { def confirmation_required?; false end }
+      user.instance_eval do
+        def confirmation_required?
+          false
+        end
+      end
       user.confirmation_sent_at = nil
       user.save
       assert user.reload.confirm
@@ -302,7 +313,7 @@ class ConfirmableTest < ActiveSupport::TestCase
   end
 
   test 'should find a user to send email instructions for the user confirm its email by authentication_keys' do
-    swap Devise, authentication_keys: [:username, :email] do
+    swap Devise, authentication_keys: %i[username email] do
       user = create_user
       confirm_user = User.send_confirmation_instructions(email: user.email, username: user.username)
       assert_equal user, confirm_user
@@ -310,7 +321,7 @@ class ConfirmableTest < ActiveSupport::TestCase
   end
 
   test 'should require all confirmation_keys' do
-    swap Devise, confirmation_keys: [:username, :email] do
+    swap Devise, confirmation_keys: %i[username email] do
       user = create_user
       confirm_user = User.send_confirmation_instructions(email: user.email)
       refute confirm_user.persisted?
@@ -364,7 +375,7 @@ class ConfirmableTest < ActiveSupport::TestCase
   test 'should call after_confirmation if confirmed' do
     user = create_user
     user.define_singleton_method :after_confirmation do
-      self.username = self.username.to_s + 'updated'
+      self.username = username.to_s + 'updated'
     end
     old = user.username
     assert user.confirm
@@ -375,7 +386,7 @@ class ConfirmableTest < ActiveSupport::TestCase
     user = create_user
     assert user.confirm
     user.define_singleton_method :after_confirmation do
-      self.username = self.username.to_s + 'updated'
+      self.username = username.to_s + 'updated'
     end
     old = user.username
     refute user.confirm
@@ -392,7 +403,7 @@ end
 class ReconfirmableTest < ActiveSupport::TestCase
   test 'should not worry about validations on confirm even with reconfirmable' do
     admin = create_admin
-    admin.reset_password_token = "a"
+    admin.reset_password_token = 'a'
     assert admin.confirm
   end
 
@@ -436,18 +447,18 @@ class ReconfirmableTest < ActiveSupport::TestCase
   test 'should send confirmation instructions by email after changing email' do
     admin = create_admin
     assert admin.confirm
-    assert_email_sent "new_test@example.com" do
+    assert_email_sent 'new_test@example.com' do
       assert admin.update(email: 'new_test@example.com')
     end
-    assert_match "new_test@example.com", ActionMailer::Base.deliveries.last.body.encoded
+    assert_match 'new_test@example.com', ActionMailer::Base.deliveries.last.body.encoded
   end
 
   test 'should send confirmation instructions by email after changing email from nil' do
     admin = create_admin(email: nil)
-    assert_email_sent "new_test@example.com" do
+    assert_email_sent 'new_test@example.com' do
       assert admin.update(email: 'new_test@example.com')
     end
-    assert_match "new_test@example.com", ActionMailer::Base.deliveries.last.body.encoded
+    assert_match 'new_test@example.com', ActionMailer::Base.deliveries.last.body.encoded
   end
 
   test 'should not send confirmation by email after changing password' do
@@ -501,38 +512,38 @@ class ReconfirmableTest < ActiveSupport::TestCase
   end
 
   test 'should return a new admin if no email or unconfirmed_email was found' do
-    confirmation_admin = Admin.send_confirmation_instructions(email: "invalid@email.com")
+    confirmation_admin = Admin.send_confirmation_instructions(email: 'invalid@email.com')
     refute confirmation_admin.persisted?
   end
 
   test 'should add error to new admin email if no email or unconfirmed_email was found' do
-    confirmation_admin = Admin.send_confirmation_instructions(email: "invalid@email.com")
+    confirmation_admin = Admin.send_confirmation_instructions(email: 'invalid@email.com')
     assert confirmation_admin.errors[:email]
-    assert_equal "not found", confirmation_admin.errors[:email].join
+    assert_equal 'not found', confirmation_admin.errors[:email].join
   end
 
   test 'should find admin with email in unconfirmed_emails' do
     admin = create_admin
-    admin.unconfirmed_email = "new_test@email.com"
+    admin.unconfirmed_email = 'new_test@email.com'
     assert admin.save
-    admin = Admin.find_by_unconfirmed_email_with_errors(email: "new_test@email.com")
+    admin = Admin.find_by_unconfirmed_email_with_errors(email: 'new_test@email.com')
     assert admin.persisted?
   end
 
   test 'required_fields should contain the fields that Devise uses' do
-    assert_equal [
-      :confirmation_token,
-      :confirmed_at,
-      :confirmation_sent_at
+    assert_equal %i[
+      confirmation_token
+      confirmed_at
+      confirmation_sent_at
     ], Devise::Models::Confirmable.required_fields(User)
   end
 
   test 'required_fields should also contain unconfirmable when reconfirmable_email is true' do
-    assert_equal [
-      :confirmation_token,
-      :confirmed_at,
-      :confirmation_sent_at,
-      :unconfirmed_email
+    assert_equal %i[
+      confirmation_token
+      confirmed_at
+      confirmation_sent_at
+      unconfirmed_email
     ], Devise::Models::Confirmable.required_fields(Admin)
   end
 
@@ -553,7 +564,7 @@ class ReconfirmableTest < ActiveSupport::TestCase
   test 'should require reconfirmation after creating a record and updating the email' do
     admin = create_admin
     assert !admin.instance_variable_get(:@bypass_confirmation_postpone)
-    admin.email = "new_test@email.com"
+    admin.email = 'new_test@email.com'
     admin.save
     assert admin.pending_reconfirmation?
   end

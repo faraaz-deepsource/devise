@@ -102,13 +102,13 @@ module Devise
         end
 
         result = if valid_password?(current_password)
-          update(params, *options)
-        else
-          assign_attributes(params, *options)
-          valid?
-          errors.add(:current_password, current_password.blank? ? :blank : :invalid)
-          false
-        end
+                   update(params, *options)
+                 else
+                   assign_attributes(params, *options)
+                   valid?
+                   errors.add(:current_password, current_password.blank? ? :blank : :invalid)
+                   false
+                 end
 
         clean_up_passwords
         result
@@ -148,15 +148,13 @@ module Devise
       # error on :current_password. It also automatically rejects
       # :current_password if it is blank.
       def destroy_with_password(current_password)
-        result = if valid_password?(current_password)
+        if valid_password?(current_password)
           destroy
         else
           valid?
           errors.add(:current_password, current_password.blank? ? :blank : :invalid)
           false
         end
-
-        result
       end
 
       # A callback initiated after successfully authenticating. This can be
@@ -169,12 +167,11 @@ module Devise
       #     self.update_attribute(:invite_code, nil)
       #   end
       #
-      def after_database_authentication
-      end
+      def after_database_authentication; end
 
       # A reliable way to expose the salt regardless of the implementation.
       def authenticatable_salt
-        encrypted_password[0,29] if encrypted_password
+        encrypted_password[0, 29] if encrypted_password
       end
 
       if Devise.activerecord51?
@@ -194,7 +191,7 @@ module Devise
         send_devise_notification(:password_change)
       end
 
-    protected
+      protected
 
       # Hashes the password using bcrypt. Custom hash functions should override
       # this method to apply their own algorithm.
@@ -226,7 +223,8 @@ module Devise
       end
 
       module ClassMethods
-        Devise::Models.config(self, :pepper, :stretches, :send_email_changed_notification, :send_password_change_notification)
+        Devise::Models.config(self, :pepper, :stretches, :send_email_changed_notification,
+                              :send_password_change_notification)
 
         # We assume this method already gets the sanitized values from the
         # DatabaseAuthenticatable strategy. If you are using this method on
