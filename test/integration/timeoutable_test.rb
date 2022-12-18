@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class SessionTimeoutTest < Devise::IntegrationTest
-
   def last_request_at
     @controller.user_session['last_request_at']
   end
@@ -104,8 +103,8 @@ class SessionTimeoutTest < Devise::IntegrationTest
     get expire_user_path(user)
     assert warden.authenticated?(:user)
 
-    get "/users/sign_in"
-    assert_redirected_to "/users/sign_in"
+    get '/users/sign_in'
+    assert_redirected_to '/users/sign_in'
     follow_redirect!
 
     assert_response :success
@@ -117,7 +116,7 @@ class SessionTimeoutTest < Devise::IntegrationTest
     user = sign_in_as_user
     get expire_user_path(user)
 
-    post "/users/sign_in", params: { email: user.email, password: "123456" }
+    post '/users/sign_in', params: { email: user.email, password: '123456' }
 
     assert_response :redirect
     follow_redirect!

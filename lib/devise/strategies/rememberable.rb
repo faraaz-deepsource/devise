@@ -26,11 +26,11 @@ module Devise
           return pass
         end
 
-        if validate(resource)
-          remember_me(resource) if extend_remember_me?(resource)
-          resource.after_remembered
-          success!(resource)
-        end
+        return unless validate(resource)
+
+        remember_me(resource) if extend_remember_me?(resource)
+        resource.after_remembered
+        success!(resource)
       end
 
       # No need to clean up the CSRF when using rememberable.
@@ -42,7 +42,7 @@ module Devise
         false
       end
 
-    private
+      private
 
       def extend_remember_me?(resource)
         resource.respond_to?(:extend_remember_period) && resource.extend_remember_period
@@ -59,7 +59,6 @@ module Devise
       def remember_cookie
         @remember_cookie ||= cookies.signed[remember_key]
       end
-
     end
   end
 end

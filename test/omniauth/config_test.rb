@@ -22,7 +22,7 @@ class OmniAuthConfigTest < ActiveSupport::TestCase
     assert_equal :github, config.strategy_name
   end
 
-  test "finds contrib strategies" do
+  test 'finds contrib strategies' do
     config = Devise::OmniAuth::Config.new :facebook, [{}]
     assert_equal OmniAuth::Strategies::Facebook, config.strategy_class
   end
@@ -54,7 +54,7 @@ class OmniAuthConfigTest < ActiveSupport::TestCase
   end
 
   test 'allows the user to define a custom require path' do
-    config = Devise::OmniAuth::Config.new :my_strategy, [{strategy_class: MyStrategy}]
+    config = Devise::OmniAuth::Config.new :my_strategy, [{ strategy_class: MyStrategy }]
     config_class = config.strategy_class
     assert_equal MyStrategy, config_class
   end
