@@ -14,11 +14,11 @@ class OmniAuthRoutesTest < ActionController::TestCase
     assert_equal @controller.send(action, User.new, provider),
                  @controller.send("user_#{provider}_#{action}")
 
-    if with_param
-      # Default url params
-      assert_equal @controller.send(action, :user, provider, param: 123),
-                   @controller.send("user_#{provider}_#{action}", param: 123)
-    end
+    return unless with_param
+
+    # Default url params
+    assert_equal @controller.send(action, :user, provider, param: 123),
+                 @controller.send("user_#{provider}_#{action}", param: 123)
   end
 
   test 'should alias omniauth_callback to mapped user auth_callback' do
@@ -30,7 +30,7 @@ class OmniAuthRoutesTest < ActionController::TestCase
   end
 
   test 'should generate authorization path' do
-    assert_match "/users/auth/facebook", @controller.omniauth_authorize_path(:user, :facebook)
+    assert_match '/users/auth/facebook', @controller.omniauth_authorize_path(:user, :facebook)
 
     assert_raise NoMethodError do
       @controller.omniauth_authorize_path(:user, :github)
@@ -38,16 +38,16 @@ class OmniAuthRoutesTest < ActionController::TestCase
   end
 
   test 'should generate authorization path for named open_id omniauth' do
-    assert_match "/users/auth/google", @controller.omniauth_authorize_path(:user, :google)
+    assert_match '/users/auth/google', @controller.omniauth_authorize_path(:user, :google)
   end
 
   test 'should generate authorization path with params' do
-    assert_match "/users/auth/openid?openid_url=http%3A%2F%2Fyahoo.com",
-                  @controller.omniauth_authorize_path(:user, :openid, openid_url: "http://yahoo.com")
+    assert_match '/users/auth/openid?openid_url=http%3A%2F%2Fyahoo.com',
+                 @controller.omniauth_authorize_path(:user, :openid, openid_url: 'http://yahoo.com')
   end
 
   test 'should not add a "?" if no param was sent' do
-    assert_equal "/users/auth/openid",
-                  @controller.omniauth_authorize_path(:user, :openid)
+    assert_equal '/users/auth/openid',
+                 @controller.omniauth_authorize_path(:user, :openid)
   end
 end
