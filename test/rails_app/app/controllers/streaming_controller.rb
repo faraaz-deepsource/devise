@@ -14,10 +14,8 @@ class StreamingController < ApplicationController
   def process(name)
     super(name)
   rescue ArgumentError => e
-    if e.message == 'uncaught throw :warden'
-      throw :warden
-    else
-      raise e
-    end
+    raise e unless e.message == 'uncaught throw :warden'
+
+    throw :warden
   end
 end
