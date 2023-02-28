@@ -1,4 +1,3 @@
-# encoding: UTF-8
 # frozen_string_literal: true
 
 require 'test_helper'
@@ -31,7 +30,7 @@ class ValidatableTest < ActiveSupport::TestCase
     assert user.invalid?
     assert_not_equal 'is invalid', user.errors[:email].join
 
-    %w{invalid_email_format 123 $$$ () ☃}.each do |email|
+    %w[invalid_email_format 123 $$$ () ☃].each do |email|
       user.email = email
       assert user.invalid?, "should be invalid with email #{email}"
       assert_equal 'is invalid', user.errors[:email].join
@@ -42,7 +41,7 @@ class ValidatableTest < ActiveSupport::TestCase
   end
 
   test 'should accept valid emails' do
-    %w(a.b.c@example.com test_mail@gmail.com any@any.net email@test.br 123@mail.test 1☃3@mail.test).each do |email|
+    %w[a.b.c@example.com test_mail@gmail.com any@any.net email@test.br 123@mail.test 1☃3@mail.test].each do |email|
       user = new_user(email: email)
       assert user.valid?, "should be valid with email #{email}"
       assert_blank user.errors[:email]
@@ -87,7 +86,7 @@ class ValidatableTest < ActiveSupport::TestCase
   end
 
   test 'should require a password with maximum of 72 characters long' do
-    user = new_user(password: 'x'*73, password_confirmation: 'x'*73)
+    user = new_user(password: 'x' * 73, password_confirmation: 'x' * 73)
     assert user.invalid?
     assert_equal 'is too long (maximum is 72 characters)', user.errors[:password].join
   end
@@ -99,11 +98,11 @@ class ValidatableTest < ActiveSupport::TestCase
 
     user.password_confirmation = 'confirmation'
     assert user.invalid?
-    refute (user.errors[:password].join =~ /is too long/)
+    refute(user.errors[:password].join =~ /is too long/)
   end
 
   test 'should complain about length even if password is not required' do
-    user = new_user(password: 'x'*73, password_confirmation: 'x'*73)
+    user = new_user(password: 'x' * 73, password_confirmation: 'x' * 73)
     user.stubs(:password_required?).returns(false)
     assert user.invalid?
     assert_equal 'is too long (maximum is 72 characters)', user.errors[:password].join

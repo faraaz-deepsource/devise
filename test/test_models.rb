@@ -16,13 +16,14 @@ end
 
 class UserWithCustomHashing < User
   protected
+
   def password_digest(password)
     password.reverse
   end
 end
 
 class UserWithVirtualAttributes < User
-  devise case_insensitive_keys: [:email, :email_confirmation]
+  devise case_insensitive_keys: %i[email email_confirmation]
   validates :email, presence: true, confirmation: { on: :create }
 end
 

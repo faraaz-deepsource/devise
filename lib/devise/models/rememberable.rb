@@ -43,20 +43,21 @@ module Devise
 
       attr_accessor :remember_me
 
-      def self.required_fields(klass)
+      def self.required_fields(_klass)
         [:remember_created_at]
       end
 
       def remember_me!
         self.remember_token ||= self.class.remember_token if respond_to?(:remember_token)
         self.remember_created_at ||= Time.now.utc
-        save(validate: false) if self.changed?
+        save(validate: false) if changed?
       end
 
       # If the record is persisted, remove the remember token (but only if
       # it exists), and save the record without validations.
       def forget_me!
         return unless persisted?
+
         self.remember_token = nil if respond_to?(:remember_token)
         self.remember_created_at = nil if self.class.expire_all_remember_me_on_sign_out
         save(validate: false)
@@ -77,9 +78,9 @@ module Devise
           salt
         else
           raise "authenticatable_salt returned nil for the #{self.class.name} model. " \
-            "In order to use rememberable, you must ensure a password is always set " \
-            "or have a remember_token column in your model or implement your own " \
-            "rememberable_value in the model with custom logic."
+            'In order to use rememberable, you must ensure a password is always set ' \
+            'or have a remember_token column in your model or implement your own ' \
+            'rememberable_value in the model with custom logic.'
         end
       end
 
@@ -97,15 +98,12 @@ module Devise
       #     self.update_attribute(:invite_code, nil)
       #   end
       #
-      def after_remembered
-      end
+      def after_remembered; end
 
       def remember_me?(token, generated_at)
         # TODO: Normalize the JSON type coercion along with the Timeoutable hook
         # in a single place https://github.com/heartcombo/devise/blob/ffe9d6d406e79108cf32a2c6a1d0b3828849c40b/lib/devise/hooks/timeoutable.rb#L14-L18
-        if generated_at.is_a?(String)
-          generated_at = time_from_json(generated_at)
-        end
+        generated_at = time_from_json(generated_at) if generated_at.is_a?(String)
 
         # The token is only valid if:
         # 1. we have a date
@@ -114,9 +112,9 @@ module Devise
         # 4. the token date is bigger than the remember_created_at
         # 5. the token matches
         generated_at.is_a?(Time) &&
-         (self.class.remember_for.ago < generated_at) &&
-         (generated_at > (remember_created_at || Time.now).utc) &&
-         Devise.secure_compare(rememberable_value, token)
+          (self.class.remember_for.ago < generated_at) &&
+          (generated_at > (remember_created_at || Time.now).utc) &&
+          Devise.secure_compare(rememberable_value, token)
       end
 
       private
@@ -125,7 +123,11 @@ module Devise
         if value =~ /\A\d+\.\d+\Z/
           Time.at(value.to_f)
         else
-          Time.parse(value) rescue nil
+          begin
+            Time.parse(value)
+          rescue StandardError
+            nil
+          end
         end
       end
 
@@ -144,14 +146,15 @@ module Devise
         end
 
         # Generate a token checking if one does not already exist in the database.
-        def remember_token #:nodoc:
+        def remember_token # :nodoc:
           loop do
             token = Devise.friendly_token
             break token unless to_adapter.find_first({ remember_token: token })
           end
         end
 
-        Devise::Models.config(self, :remember_for, :extend_remember_period, :rememberable_options, :expire_all_remember_me_on_sign_out)
+        Devise::Models.config(self, :remember_for, :extend_remember_period, :rememberable_options,
+                              :expire_all_remember_me_on_sign_out)
       end
     end
   end

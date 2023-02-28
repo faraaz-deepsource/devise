@@ -17,7 +17,7 @@ module Devise
     module Omniauthable
       extend ActiveSupport::Concern
 
-      def self.required_fields(klass)
+      def self.required_fields(_klass)
         []
       end
 
