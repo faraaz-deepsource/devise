@@ -6,7 +6,7 @@ module Devise
       def initialize(strategy)
         @strategy = strategy
         super("Could not find a strategy with name `#{strategy}'. " \
-          "Please ensure it is required or explicitly set it using the :strategy_class option.")
+          'Please ensure it is required or explicitly set it using the :strategy_class option.')
       end
     end
 
@@ -36,11 +36,9 @@ module Devise
 
       def autoload_strategy
         name = ::OmniAuth::Utils.camelize(provider.to_s)
-        if ::OmniAuth::Strategies.const_defined?(name)
-          ::OmniAuth::Strategies.const_get(name)
-        else
-          raise StrategyNotFound, name
-        end
+        raise StrategyNotFound, name unless ::OmniAuth::Strategies.const_defined?(name)
+
+        ::OmniAuth::Strategies.const_get(name)
       end
     end
   end

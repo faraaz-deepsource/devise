@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "devise/hooks/lockable"
+require 'devise/hooks/lockable'
 
 module Devise
   module Models
@@ -22,9 +22,9 @@ module Devise
     #   * +unlock_keys+: the keys you want to use when locking and unlocking an account
     #
     module Lockable
-      extend  ActiveSupport::Concern
+      extend ActiveSupport::Concern
 
-      delegate :lock_strategy_enabled?, :unlock_strategy_enabled?, to: "self.class"
+      delegate :lock_strategy_enabled?, :unlock_strategy_enabled?, to: 'self.class'
 
       def self.required_fields(klass)
         attributes = []
@@ -39,7 +39,7 @@ module Devise
       # * +opts+: Hash options if you don't want to send email
       #   when you lock access, you could pass the next hash
       #   `{ send_instructions: false } as option`.
-      def lock_access!(opts = { })
+      def lock_access!(opts = {})
         self.locked_at = Time.now.utc
 
         if unlock_strategy_enabled?(:email) && opts.fetch(:send_instructions, true)
@@ -59,10 +59,10 @@ module Devise
 
       # Resets failed attempts counter to 0.
       def reset_failed_attempts!
-        if respond_to?(:failed_attempts) && !failed_attempts.to_i.zero?
-          self.failed_attempts = 0
-          save(validate: false)
-        end
+        return unless respond_to?(:failed_attempts) && !failed_attempts.to_i.zero?
+
+        self.failed_attempts = 0
+        save(validate: false)
       end
 
       # Verifies whether a user is locked or not.
@@ -140,37 +140,37 @@ module Devise
 
       protected
 
-        def attempts_exceeded?
-          self.failed_attempts >= self.class.maximum_attempts
-        end
+      def attempts_exceeded?
+        failed_attempts >= self.class.maximum_attempts
+      end
 
-        def last_attempt?
-          self.failed_attempts == self.class.maximum_attempts - 1
-        end
+      def last_attempt?
+        failed_attempts == self.class.maximum_attempts - 1
+      end
 
-        # Tells if the lock is expired if :time unlock strategy is active
-        def lock_expired?
-          if unlock_strategy_enabled?(:time)
-            locked_at && locked_at < self.class.unlock_in.ago
-          else
-            false
-          end
+      # Tells if the lock is expired if :time unlock strategy is active
+      def lock_expired?
+        if unlock_strategy_enabled?(:time)
+          locked_at && locked_at < self.class.unlock_in.ago
+        else
+          false
         end
+      end
 
-        # Checks whether the record is locked or not, yielding to the block
-        # if it's locked, otherwise adds an error to email.
-        def if_access_locked
-          if access_locked?
-            yield
-          else
-            self.errors.add(Devise.unlock_keys.first, :not_locked)
-            false
-          end
+      # Checks whether the record is locked or not, yielding to the block
+      # if it's locked, otherwise adds an error to email.
+      def if_access_locked
+        if access_locked?
+          yield
+        else
+          errors.add(Devise.unlock_keys.first, :not_locked)
+          false
         end
+      end
 
       module ClassMethods
         # List of strategies that are enabled/supported if :both is used.
-        BOTH_STRATEGIES = [:time, :email]
+        BOTH_STRATEGIES = %i[time email]
 
         # Attempt to find a user by its unlock keys. If a record is found, send new
         # unlock instructions to it. If not user is found, returns a new user
@@ -198,16 +198,17 @@ module Devise
 
         # Is the unlock enabled for the given unlock strategy?
         def unlock_strategy_enabled?(strategy)
-          self.unlock_strategy == strategy ||
-            (self.unlock_strategy == :both && BOTH_STRATEGIES.include?(strategy))
+          unlock_strategy == strategy ||
+            (unlock_strategy == :both && BOTH_STRATEGIES.include?(strategy))
         end
 
         # Is the lock enabled for the given lock strategy?
         def lock_strategy_enabled?(strategy)
-          self.lock_strategy == strategy
+          lock_strategy == strategy
         end
 
-        Devise::Models.config(self, :maximum_attempts, :lock_strategy, :unlock_strategy, :unlock_in, :unlock_keys, :last_attempt_warning)
+        Devise::Models.config(self, :maximum_attempts, :lock_strategy, :unlock_strategy, :unlock_in, :unlock_keys,
+                              :last_attempt_warning)
       end
     end
   end
