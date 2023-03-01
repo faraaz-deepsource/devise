@@ -71,7 +71,8 @@ class ResetPasswordInstructionsTest < ActionMailer::TestCase
   end
 
   test 'subject namespaced by model' do
-    store_translations :en, devise: { mailer: { reset_password_instructions: { user_subject: 'User Reset Instructions' } } } do
+    store_translations :en,
+                       devise: { mailer: { reset_password_instructions: { user_subject: 'User Reset Instructions' } } } do
       assert_equal 'User Reset Instructions', mail.subject
     end
   end
@@ -83,15 +84,16 @@ class ResetPasswordInstructionsTest < ActionMailer::TestCase
   test 'body should have link to confirm the account' do
     host, port = ActionMailer::Base.default_url_options.values_at :host, :port
 
-    if mail.body.encoded =~ %r{<a href=\"http://#{host}:#{port}/users/password/edit\?reset_password_token=([^"]+)">}
-      assert_equal user.reset_password_token, Devise.token_generator.digest(user.class, :reset_password_token, $1)
+    if mail.body.encoded =~ %r{<a href="http://#{host}:#{port}/users/password/edit\?reset_password_token=([^"]+)">}
+      assert_equal user.reset_password_token,
+                   Devise.token_generator.digest(user.class, :reset_password_token, ::Regexp.last_match(1))
     else
-      flunk "expected reset password url regex to match"
+      flunk 'expected reset password url regex to match'
     end
   end
 
   test 'mailer sender accepts a proc' do
-    swap Devise, mailer_sender: proc { "another@example.com" } do
+    swap Devise, mailer_sender: proc { 'another@example.com' } do
       assert_equal ['another@example.com'], mail.from
     end
   end
