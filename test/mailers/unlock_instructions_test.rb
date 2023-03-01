@@ -3,7 +3,6 @@
 require 'test_helper'
 
 class UnlockInstructionsTest < ActionMailer::TestCase
-
   def setup
     setup_mailer
     Devise.mailer = 'Devise::Mailer'
@@ -66,7 +65,7 @@ class UnlockInstructionsTest < ActionMailer::TestCase
   end
 
   test 'set up subject from I18n' do
-    store_translations :en, devise: { mailer: { unlock_instructions:  { subject: 'Yo unlock instructions' } } } do
+    store_translations :en, devise: { mailer: { unlock_instructions: { subject: 'Yo unlock instructions' } } } do
       assert_equal 'Yo unlock instructions', mail.subject
     end
   end
@@ -84,10 +83,10 @@ class UnlockInstructionsTest < ActionMailer::TestCase
   test 'body should have link to unlock the account' do
     host, port = ActionMailer::Base.default_url_options.values_at :host, :port
 
-    if mail.body.encoded =~ %r{<a href=\"http://#{host}:#{port}/users/unlock\?unlock_token=([^"]+)">}
-      assert_equal user.unlock_token, Devise.token_generator.digest(user.class, :unlock_token, $1)
+    if mail.body.encoded =~ %r{<a href="http://#{host}:#{port}/users/unlock\?unlock_token=([^"]+)">}
+      assert_equal user.unlock_token, Devise.token_generator.digest(user.class, :unlock_token, ::Regexp.last_match(1))
     else
-      flunk "expected unlock url regex to match"
+      flunk 'expected unlock url regex to match'
     end
   end
 end
