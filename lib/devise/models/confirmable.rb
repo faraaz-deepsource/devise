@@ -55,7 +55,8 @@ module Devise
           after_create :send_on_create_confirmation_instructions, if: :send_confirmation_notification?
           after_update :send_reconfirmation_instructions, if: :reconfirmation_required?
         end
-        before_update :postpone_email_change_until_confirmation_and_regenerate_confirmation_token, if: :postpone_email_change?
+        before_update :postpone_email_change_until_confirmation_and_regenerate_confirmation_token,
+                      if: :postpone_email_change?
       end
 
       def initialize(*args, &block)
@@ -68,7 +69,7 @@ module Devise
       end
 
       def self.required_fields(klass)
-        required_methods = [:confirmation_token, :confirmed_at, :confirmation_sent_at]
+        required_methods = %i[confirmation_token confirmed_at confirmation_sent_at]
         required_methods << :unconfirmed_email if klass.reconfirmable
         required_methods
       end
@@ -79,23 +80,23 @@ module Devise
       def confirm(args = {})
         pending_any_confirmation do
           if confirmation_period_expired?
-            self.errors.add(:email, :confirmation_period_expired,
-              period: Devise::TimeInflector.time_ago_in_words(self.class.confirm_within.ago))
+            errors.add(:email, :confirmation_period_expired,
+                       period: Devise::TimeInflector.time_ago_in_words(self.class.confirm_within.ago))
             return false
           end
 
           self.confirmed_at = Time.now.utc
 
           saved = if pending_reconfirmation?
-            skip_reconfirmation!
-            self.email = unconfirmed_email
-            self.unconfirmed_email = nil
+                    skip_reconfirmation!
+                    self.email = unconfirmed_email
+                    self.unconfirmed_email = nil
 
-            # We need to validate in such cases to enforce e-mail uniqueness
-            save(validate: true)
-          else
-            save(validate: args[:ensure_valid] == true)
-          end
+                    # We need to validate in such cases to enforce e-mail uniqueness
+                    save(validate: true)
+                  else
+                    save(validate: args[:ensure_valid] == true)
+                  end
 
           after_confirmation if saved
           saved
@@ -113,20 +114,18 @@ module Devise
 
       # Send confirmation instructions by email
       def send_confirmation_instructions
-        unless @raw_confirmation_token
-          generate_confirmation_token!
-        end
+        generate_confirmation_token! unless @raw_confirmation_token
 
-        opts = pending_reconfirmation? ? { to: unconfirmed_email } : { }
+        opts = pending_reconfirmation? ? { to: unconfirmed_email } : {}
         send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
       end
 
       def send_reconfirmation_instructions
         @reconfirmation_required = false
 
-        unless @skip_confirmation_notification
-          send_confirmation_instructions
-        end
+        return if @skip_confirmation_notification
+
+        send_confirmation_instructions
       end
 
       # Resend confirmation token.
@@ -170,164 +169,163 @@ module Devise
 
       protected
 
-        # To not require reconfirmation after creating with #save called in a
-        # callback call skip_create_confirmation!
-        def skip_reconfirmation_in_callback!
-          @skip_reconfirmation_in_callback = true
-        end
+      # To not require reconfirmation after creating with #save called in a
+      # callback call skip_create_confirmation!
+      def skip_reconfirmation_in_callback!
+        @skip_reconfirmation_in_callback = true
+      end
 
-        # A callback method used to deliver confirmation
-        # instructions on creation. This can be overridden
-        # in models to map to a nice sign up e-mail.
-        def send_on_create_confirmation_instructions
-          send_confirmation_instructions
-        end
+      # A callback method used to deliver confirmation
+      # instructions on creation. This can be overridden
+      # in models to map to a nice sign up e-mail.
+      def send_on_create_confirmation_instructions
+        send_confirmation_instructions
+      end
 
-        # Callback to overwrite if confirmation is required or not.
-        def confirmation_required?
-          !confirmed?
-        end
+      # Callback to overwrite if confirmation is required or not.
+      def confirmation_required?
+        !confirmed?
+      end
 
-        # Checks if the confirmation for the user is within the limit time.
-        # We do this by calculating if the difference between today and the
-        # confirmation sent date does not exceed the confirm in time configured.
-        # allow_unconfirmed_access_for is a model configuration, must always be an integer value.
-        #
-        # Example:
-        #
-        #   # allow_unconfirmed_access_for = 1.day and confirmation_sent_at = today
-        #   confirmation_period_valid?   # returns true
-        #
-        #   # allow_unconfirmed_access_for = 5.days and confirmation_sent_at = 4.days.ago
-        #   confirmation_period_valid?   # returns true
-        #
-        #   # allow_unconfirmed_access_for = 5.days and confirmation_sent_at = 5.days.ago
-        #   confirmation_period_valid?   # returns false
-        #
-        #   # allow_unconfirmed_access_for = 0.days
-        #   confirmation_period_valid?   # will always return false
-        #
-        #   # allow_unconfirmed_access_for = nil
-        #   confirmation_period_valid?   # will always return true
-        #
-        def confirmation_period_valid?
-          return true if self.class.allow_unconfirmed_access_for.nil?
-          return false if self.class.allow_unconfirmed_access_for == 0.days
+      # Checks if the confirmation for the user is within the limit time.
+      # We do this by calculating if the difference between today and the
+      # confirmation sent date does not exceed the confirm in time configured.
+      # allow_unconfirmed_access_for is a model configuration, must always be an integer value.
+      #
+      # Example:
+      #
+      #   # allow_unconfirmed_access_for = 1.day and confirmation_sent_at = today
+      #   confirmation_period_valid?   # returns true
+      #
+      #   # allow_unconfirmed_access_for = 5.days and confirmation_sent_at = 4.days.ago
+      #   confirmation_period_valid?   # returns true
+      #
+      #   # allow_unconfirmed_access_for = 5.days and confirmation_sent_at = 5.days.ago
+      #   confirmation_period_valid?   # returns false
+      #
+      #   # allow_unconfirmed_access_for = 0.days
+      #   confirmation_period_valid?   # will always return false
+      #
+      #   # allow_unconfirmed_access_for = nil
+      #   confirmation_period_valid?   # will always return true
+      #
+      def confirmation_period_valid?
+        return true if self.class.allow_unconfirmed_access_for.nil?
+        return false if self.class.allow_unconfirmed_access_for == 0.days
 
-          confirmation_sent_at && confirmation_sent_at.utc >= self.class.allow_unconfirmed_access_for.ago
-        end
+        confirmation_sent_at && confirmation_sent_at.utc >= self.class.allow_unconfirmed_access_for.ago
+      end
 
-        # Checks if the user confirmation happens before the token becomes invalid
-        # Examples:
-        #
-        #   # confirm_within = 3.days and confirmation_sent_at = 2.days.ago
-        #   confirmation_period_expired?  # returns false
-        #
-        #   # confirm_within = 3.days and confirmation_sent_at = 4.days.ago
-        #   confirmation_period_expired?  # returns true
-        #
-        #   # confirm_within = nil
-        #   confirmation_period_expired?  # will always return false
-        #
-        def confirmation_period_expired?
-          self.class.confirm_within && self.confirmation_sent_at && (Time.now.utc > self.confirmation_sent_at.utc + self.class.confirm_within)
-        end
+      # Checks if the user confirmation happens before the token becomes invalid
+      # Examples:
+      #
+      #   # confirm_within = 3.days and confirmation_sent_at = 2.days.ago
+      #   confirmation_period_expired?  # returns false
+      #
+      #   # confirm_within = 3.days and confirmation_sent_at = 4.days.ago
+      #   confirmation_period_expired?  # returns true
+      #
+      #   # confirm_within = nil
+      #   confirmation_period_expired?  # will always return false
+      #
+      def confirmation_period_expired?
+        self.class.confirm_within && confirmation_sent_at && (Time.now.utc > confirmation_sent_at.utc + self.class.confirm_within)
+      end
 
-        # Checks whether the record requires any confirmation.
-        def pending_any_confirmation
-          if (!confirmed? || pending_reconfirmation?)
-            yield
-          else
-            self.errors.add(:email, :already_confirmed)
-            false
-          end
-        end
-
-        # Generates a new random token for confirmation, and stores
-        # the time this token is being generated in confirmation_sent_at
-        def generate_confirmation_token
-          if self.confirmation_token && !confirmation_period_expired?
-            @raw_confirmation_token = self.confirmation_token
-          else
-            self.confirmation_token = @raw_confirmation_token = Devise.friendly_token
-            self.confirmation_sent_at = Time.now.utc
-          end
-        end
-
-        def generate_confirmation_token!
-          generate_confirmation_token && save(validate: false)
-        end
-
-        if Devise.activerecord51?
-          def postpone_email_change_until_confirmation_and_regenerate_confirmation_token
-            @reconfirmation_required = true
-            self.unconfirmed_email = self.email
-            self.email = self.email_in_database
-            self.confirmation_token = nil
-            generate_confirmation_token
-          end
+      # Checks whether the record requires any confirmation.
+      def pending_any_confirmation
+        if !confirmed? || pending_reconfirmation?
+          yield
         else
-          def postpone_email_change_until_confirmation_and_regenerate_confirmation_token
-            @reconfirmation_required = true
-            self.unconfirmed_email = self.email
-            self.email = self.email_was
-            self.confirmation_token = nil
-            generate_confirmation_token
-          end
+          errors.add(:email, :already_confirmed)
+          false
         end
+      end
 
-        if Devise.activerecord51?
-          def postpone_email_change?
-            postpone = self.class.reconfirmable &&
-              will_save_change_to_email? &&
-              !@bypass_confirmation_postpone &&
-              self.email.present? &&
-              (!@skip_reconfirmation_in_callback || !self.email_in_database.nil?)
-            @bypass_confirmation_postpone = false
-            postpone
-          end
+      # Generates a new random token for confirmation, and stores
+      # the time this token is being generated in confirmation_sent_at
+      def generate_confirmation_token
+        if confirmation_token && !confirmation_period_expired?
+          @raw_confirmation_token = confirmation_token
         else
-          def postpone_email_change?
-            postpone = self.class.reconfirmable &&
-              email_changed? &&
-              !@bypass_confirmation_postpone &&
-              self.email.present? &&
-              (!@skip_reconfirmation_in_callback || !self.email_was.nil?)
-            @bypass_confirmation_postpone = false
-            postpone
-          end
+          self.confirmation_token = @raw_confirmation_token = Devise.friendly_token
+          self.confirmation_sent_at = Time.now.utc
         end
+      end
 
-        def reconfirmation_required?
-          self.class.reconfirmable && @reconfirmation_required && (self.email.present? || self.unconfirmed_email.present?)
-        end
+      def generate_confirmation_token!
+        generate_confirmation_token && save(validate: false)
+      end
 
-        def send_confirmation_notification?
-          confirmation_required? && !@skip_confirmation_notification && self.email.present?
+      if Devise.activerecord51?
+        def postpone_email_change_until_confirmation_and_regenerate_confirmation_token
+          @reconfirmation_required = true
+          self.unconfirmed_email = email
+          self.email = email_in_database
+          self.confirmation_token = nil
+          generate_confirmation_token
         end
+      else
+        def postpone_email_change_until_confirmation_and_regenerate_confirmation_token
+          @reconfirmation_required = true
+          self.unconfirmed_email = email
+          self.email = email_was
+          self.confirmation_token = nil
+          generate_confirmation_token
+        end
+      end
 
-        # With reconfirmable, notify the original email when the user first
-        # requests the email change, instead of when the change is confirmed.
-        def send_email_changed_notification?
-          if self.class.reconfirmable
-            self.class.send_email_changed_notification && reconfirmation_required?
-          else
-            super
-          end
+      if Devise.activerecord51?
+        def postpone_email_change?
+          postpone = self.class.reconfirmable &&
+                     will_save_change_to_email? &&
+                     !@bypass_confirmation_postpone &&
+                     email.present? &&
+                     (!@skip_reconfirmation_in_callback || !email_in_database.nil?)
+          @bypass_confirmation_postpone = false
+          postpone
         end
+      else
+        def postpone_email_change?
+          postpone = self.class.reconfirmable &&
+                     email_changed? &&
+                     !@bypass_confirmation_postpone &&
+                     email.present? &&
+                     (!@skip_reconfirmation_in_callback || !email_was.nil?)
+          @bypass_confirmation_postpone = false
+          postpone
+        end
+      end
 
-        # A callback initiated after successfully confirming. This can be
-        # used to insert your own logic that is only run after the user successfully
-        # confirms.
-        #
-        # Example:
-        #
-        #   def after_confirmation
-        #     self.update_attribute(:invite_code, nil)
-        #   end
-        #
-        def after_confirmation
+      def reconfirmation_required?
+        self.class.reconfirmable && @reconfirmation_required && (email.present? || unconfirmed_email.present?)
+      end
+
+      def send_confirmation_notification?
+        confirmation_required? && !@skip_confirmation_notification && email.present?
+      end
+
+      # With reconfirmable, notify the original email when the user first
+      # requests the email change, instead of when the change is confirmed.
+      def send_email_changed_notification?
+        if self.class.reconfirmable
+          self.class.send_email_changed_notification && reconfirmation_required?
+        else
+          super
         end
+      end
+
+      # A callback initiated after successfully confirming. This can be
+      # used to insert your own logic that is only run after the user successfully
+      # confirms.
+      #
+      # Example:
+      #
+      #   def after_confirmation
+      #     self.update_attribute(:invite_code, nil)
+      #   end
+      #
+      def after_confirmation; end
 
       module ClassMethods
         # Attempt to find a user by its email. If a record is found, send new
