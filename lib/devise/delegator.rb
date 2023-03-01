@@ -8,9 +8,9 @@ module Devise
     end
 
     def failure_app(env)
-      app = env["warden.options"] &&
-        (scope = env["warden.options"][:scope]) &&
-        Devise.mappings[scope.to_sym].failure_app
+      app = env['warden.options'] &&
+            (scope = env['warden.options'][:scope]) &&
+            Devise.mappings[scope.to_sym].failure_app
 
       app || Devise::FailureApp
     end

@@ -51,7 +51,7 @@ class FailureTest < ActiveSupport::TestCase
 
   class FakeEngineApp < Devise::FailureApp
     class FakeEngine
-      def new_user_on_engine_session_url _
+      def new_user_on_engine_session_url(_)
         '/user_on_engines/sign_in'
       end
     end
@@ -69,7 +69,7 @@ class FailureTest < ActiveSupport::TestCase
     undef_method :flash
   end
 
-  def self.context(name, &block)
+  def self.context(_name, &block)
     instance_eval(&block)
   end
 
@@ -80,13 +80,13 @@ class FailureTest < ActiveSupport::TestCase
       'REQUEST_METHOD' => 'GET',
       'warden.options' => { scope: :user },
       'action_dispatch.request.formats' => Array(env_params.delete('formats') || Mime[:html]),
-      'rack.input' => "",
+      'rack.input' => '',
       'warden' => OpenStruct.new(message: nil)
     }.merge!(env_params)
 
     # Passing nil for action_dispatch.request.formats prevents the default from being used in Rails 5, need to remove it
-    if env.has_key?('action_dispatch.request.formats') && env['action_dispatch.request.formats'].nil?
-      env.delete 'action_dispatch.request.formats' unless env['action_dispatch.request.formats']
+    if env.has_key?('action_dispatch.request.formats') && env['action_dispatch.request.formats'].nil? && !(env['action_dispatch.request.formats'])
+      env.delete 'action_dispatch.request.formats'
     end
 
     @response = (env.delete(:app) || Devise::FailureApp).call(env).to_a
@@ -148,7 +148,7 @@ class FailureTest < ActiveSupport::TestCase
 
     if Rails.application.config.respond_to?(:relative_url_root)
       test 'returns to the default redirect location considering the relative url root' do
-        swap Rails.application.config, relative_url_root: "/sample" do
+        swap Rails.application.config, relative_url_root: '/sample' do
           call_failure
           assert_equal 302, @response.first
           assert_equal 'http://test.host/sample/users/sign_in', @response.second['Location']
@@ -156,7 +156,7 @@ class FailureTest < ActiveSupport::TestCase
       end
 
       test 'returns to the default redirect location considering the relative url root and subdomain' do
-        swap Rails.application.config, relative_url_root: "/sample" do
+        swap Rails.application.config, relative_url_root: '/sample' do
           call_failure('warden.options' => { scope: :subdomain_user })
           assert_equal 302, @response.first
           assert_equal 'http://sub.test.host/sample/subdomain_users/sign_in', @response.second['Location']
@@ -166,7 +166,7 @@ class FailureTest < ActiveSupport::TestCase
 
     if Rails.application.config.action_controller.respond_to?(:relative_url_root)
       test "returns to the default redirect location considering action_controller's relative url root" do
-        swap Rails.application.config.action_controller, relative_url_root: "/sample" do
+        swap Rails.application.config.action_controller, relative_url_root: '/sample' do
           call_failure
           assert_equal 302, @response.first
           assert_equal 'http://test.host/sample/users/sign_in', @response.second['Location']
@@ -174,7 +174,7 @@ class FailureTest < ActiveSupport::TestCase
       end
 
       test "returns to the default redirect location considering action_controller's relative url root and subdomain" do
-        swap Rails.application.config.action_controller, relative_url_root: "/sample" do
+        swap Rails.application.config.action_controller, relative_url_root: '/sample' do
           call_failure('warden.options' => { scope: :subdomain_user })
           assert_equal 302, @response.first
           assert_equal 'http://sub.test.host/sample/subdomain_users/sign_in', @response.second['Location']
@@ -185,7 +185,7 @@ class FailureTest < ActiveSupport::TestCase
     test 'uses the proxy failure message as symbol' do
       call_failure('warden' => OpenStruct.new(message: :invalid))
       assert_equal 'Invalid Email or password.', @request.flash[:alert]
-      assert_equal 'http://test.host/users/sign_in', @response.second["Location"]
+      assert_equal 'http://test.host/users/sign_in', @response.second['Location']
     end
 
     test 'supports authentication_keys as a Hash for the flash message' do
@@ -203,7 +203,7 @@ class FailureTest < ActiveSupport::TestCase
     test 'uses the proxy failure message as string' do
       call_failure('warden' => OpenStruct.new(message: 'Hello world'))
       assert_equal 'Hello world', @request.flash[:alert]
-      assert_equal 'http://test.host/users/sign_in', @response.second["Location"]
+      assert_equal 'http://test.host/users/sign_in', @response.second['Location']
     end
 
     test 'set content type to default text/html' do
@@ -218,7 +218,7 @@ class FailureTest < ActiveSupport::TestCase
       else
         assert_match(/You are being/, @response.last.body)
         assert_match(/redirected/, @response.last.body)
-        assert_match(/users\/sign_in/, @response.last.body)
+        assert_match(%r{users/sign_in}, @response.last.body)
       end
     end
 
@@ -232,7 +232,7 @@ class FailureTest < ActiveSupport::TestCase
     test 'redirects the correct format if it is a non-html format request' do
       swap Devise, navigational_formats: [:js] do
         call_failure('formats' => Mime[:js])
-        assert_equal 'http://test.host/users/sign_in.js', @response.second["Location"]
+        assert_equal 'http://test.host/users/sign_in.js', @response.second['Location']
       end
     end
   end
@@ -262,13 +262,13 @@ class FailureTest < ActiveSupport::TestCase
 
     test 'return WWW-authenticate headers if model allows' do
       call_failure('formats' => Mime[:json])
-      assert_equal 'Basic realm="Application"', @response.second["WWW-Authenticate"]
+      assert_equal 'Basic realm="Application"', @response.second['WWW-Authenticate']
     end
 
     test 'does not return WWW-authenticate headers if model does not allow' do
       swap Devise, http_authenticatable: false do
         call_failure('formats' => Mime[:json])
-        assert_nil @response.second["WWW-Authenticate"]
+        assert_nil @response.second['WWW-Authenticate']
       end
     end
 
@@ -290,7 +290,7 @@ class FailureTest < ActiveSupport::TestCase
           swap Devise, http_authenticatable_on_xhr: false do
             call_failure('formats' => Mime[:html], 'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest')
             assert_equal 302, @response.first
-            assert_equal 'http://test.host/users/sign_in', @response.second["Location"]
+            assert_equal 'http://test.host/users/sign_in', @response.second['Location']
           end
         end
 
@@ -298,7 +298,7 @@ class FailureTest < ActiveSupport::TestCase
           swap Devise, http_authenticatable_on_xhr: false do
             call_failure('formats' => Mime[:json], 'HTTP_X_REQUESTED_WITH' => 'XMLHttpRequest')
             assert_equal 302, @response.first
-            assert_equal 'http://test.host/users/sign_in.json', @response.second["Location"]
+            assert_equal 'http://test.host/users/sign_in.json', @response.second['Location']
           end
         end
       end
@@ -324,9 +324,9 @@ class FailureTest < ActiveSupport::TestCase
   context 'With recall' do
     test 'calls the original controller if invalid email or password' do
       env = {
-        "warden.options" => { recall: "devise/sessions#new", attempted_path: "/users/sign_in" },
-        "devise.mapping" => Devise.mappings[:user],
-        "warden" => stub_everything
+        'warden.options' => { recall: 'devise/sessions#new', attempted_path: '/users/sign_in' },
+        'devise.mapping' => Devise.mappings[:user],
+        'warden' => stub_everything
       }
       call_failure(env)
       assert_includes @response.third.body, '<h2>Log in</h2>'
@@ -335,9 +335,9 @@ class FailureTest < ActiveSupport::TestCase
 
     test 'calls the original controller if not confirmed email' do
       env = {
-        "warden.options" => { recall: "devise/sessions#new", attempted_path: "/users/sign_in", message: :unconfirmed },
-        "devise.mapping" => Devise.mappings[:user],
-        "warden" => stub_everything
+        'warden.options' => { recall: 'devise/sessions#new', attempted_path: '/users/sign_in', message: :unconfirmed },
+        'devise.mapping' => Devise.mappings[:user],
+        'warden' => stub_everything
       }
       call_failure(env)
       assert_includes @response.third.body, '<h2>Log in</h2>'
@@ -346,9 +346,9 @@ class FailureTest < ActiveSupport::TestCase
 
     test 'calls the original controller if inactive account' do
       env = {
-        "warden.options" => { recall: "devise/sessions#new", attempted_path: "/users/sign_in", message: :inactive },
-        "devise.mapping" => Devise.mappings[:user],
-        "warden" => stub_everything
+        'warden.options' => { recall: 'devise/sessions#new', attempted_path: '/users/sign_in', message: :inactive },
+        'devise.mapping' => Devise.mappings[:user],
+        'warden' => stub_everything
       }
       call_failure(env)
       assert_includes @response.third.body, '<h2>Log in</h2>'
@@ -357,29 +357,29 @@ class FailureTest < ActiveSupport::TestCase
 
     if Rails.application.config.respond_to?(:relative_url_root)
       test 'calls the original controller with the proper environment considering the relative url root' do
-        swap Rails.application.config, relative_url_root: "/sample" do
+        swap Rails.application.config, relative_url_root: '/sample' do
           env = {
-            "warden.options" => { recall: "devise/sessions#new", attempted_path: "/sample/users/sign_in"},
-            "devise.mapping" => Devise.mappings[:user],
-            "warden" => stub_everything
+            'warden.options' => { recall: 'devise/sessions#new', attempted_path: '/sample/users/sign_in' },
+            'devise.mapping' => Devise.mappings[:user],
+            'warden' => stub_everything
           }
           call_failure(env)
           assert_includes @response.third.body, '<h2>Log in</h2>'
           assert_includes @response.third.body, 'Invalid Email or password.'
-          assert_equal '/sample', @request.env["SCRIPT_NAME"]
-          assert_equal '/users/sign_in', @request.env["PATH_INFO"]
+          assert_equal '/sample', @request.env['SCRIPT_NAME']
+          assert_equal '/users/sign_in', @request.env['PATH_INFO']
         end
       end
     end
   end
 
-  context "Lazy loading" do
-    test "loads" do
-      assert_equal "yes it does", Devise::FailureApp.new.lazy_loading_works?
+  context 'Lazy loading' do
+    test 'loads' do
+      assert_equal 'yes it does', Devise::FailureApp.new.lazy_loading_works?
     end
   end
-  context "Without Flash Support" do
-    test "returns to the default redirect location without a flash message" do
+  context 'Without Flash Support' do
+    test 'returns to the default redirect location without a flash message' do
       call_failure request_klass: RequestWithoutFlashSupport
       assert_equal 302, @response.first
       assert_equal 'http://test.host/users/sign_in', @response.second['Location']

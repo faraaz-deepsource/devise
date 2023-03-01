@@ -25,7 +25,7 @@ module Devise
         true
       end
 
-    private
+      private
 
       # Receives a resource and check if it is valid by calling valid_for_authentication?
       # A block that will be triggered while validating can be optionally
@@ -40,9 +40,7 @@ module Devise
         if result
           true
         else
-          if resource
-            fail!(resource.unauthenticated_message)
-          end
+          fail!(resource.unauthenticated_message) if resource
           false
         end
       end
@@ -102,7 +100,7 @@ module Devise
 
       # By default, a request is valid if the controller set the proper env variable.
       def valid_params_request?
-        !!env["devise.allow_params_authentication"]
+        !!env['devise.allow_params_authentication']
       end
 
       # If the request is valid, finally check if params_auth_hash returns a hash.
@@ -110,7 +108,7 @@ module Devise
         params_auth_hash.is_a?(Hash)
       end
 
-      # Note: unlike `Model.valid_password?`, this method does not actually
+      # NOTE: unlike `Model.valid_password?`, this method does not actually
       # ensure that the password in the params matches the password stored in
       # the database. It only checks if the password is *present*. Do not rely
       # on this method for validating that a given password is correct.
@@ -121,16 +119,18 @@ module Devise
       # Helper to decode credentials from HTTP.
       def decode_credentials
         return [] unless request.authorization && request.authorization =~ /^Basic (.*)/mi
-        Base64.decode64($1).split(/:/, 2)
+
+        Base64.decode64(::Regexp.last_match(1)).split(/:/, 2)
       end
 
       # Sets the authentication hash and the password from params_auth_hash or http_auth_hash.
       def with_authentication_hash(auth_type, auth_values)
-        self.authentication_hash, self.authentication_type = {}, auth_type
+        self.authentication_hash = {}
+        self.authentication_type = auth_type
         self.password = auth_values[:password]
 
         parse_authentication_key_values(auth_values, authentication_keys) &&
-        parse_authentication_key_values(request_values, request_keys)
+          parse_authentication_key_values(request_values, request_keys)
       end
 
       def authentication_keys
@@ -139,9 +139,9 @@ module Devise
 
       def http_authentication_key
         @http_authentication_key ||= mapping.to.http_authentication_key || case authentication_keys
-          when Array then authentication_keys.first
-          when Hash then authentication_keys.keys.first
-        end
+                                                                           when Array then authentication_keys.first
+                                                                           when Hash then authentication_keys.keys.first
+                                                                           end
       end
 
       def request_keys
@@ -150,7 +150,7 @@ module Devise
 
       def request_values
         keys = request_keys.respond_to?(:keys) ? request_keys.keys : request_keys
-        values = keys.map { |k| self.request.send(k) }
+        values = keys.map { |k| request.send(k) }
         Hash[keys.zip(values)]
       end
 
@@ -158,7 +158,7 @@ module Devise
         keys.each do |key, enforce|
           value = hash[key].presence
           if value
-            self.authentication_hash[key] = value
+            authentication_hash[key] = value
           else
             return false unless enforce == false
           end
@@ -170,8 +170,8 @@ module Devise
       # becomes simply :database.
       def authenticatable_name
         @authenticatable_name ||=
-          ActiveSupport::Inflector.underscore(self.class.name.split("::").last).
-            sub("_authenticatable", "").to_sym
+          ActiveSupport::Inflector.underscore(self.class.name.split('::').last)
+                                  .sub('_authenticatable', '').to_sym
       end
     end
   end
