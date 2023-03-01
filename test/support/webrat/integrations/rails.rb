@@ -33,7 +33,7 @@ module Webrat
   end
 end
 
-module ActionDispatch #:nodoc:
+module ActionDispatch # :nodoc:
   IntegrationTest.class_eval do
     include Webrat::Methods
     include Webrat::Matchers

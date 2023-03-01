@@ -4,13 +4,11 @@
 class DeviseController < Devise.parent_controller.constantize
   include Devise::Controllers::ScopedViews
 
-  if respond_to?(:helper)
-    helper DeviseHelper
-  end
+  helper DeviseHelper if respond_to?(:helper)
 
   if respond_to?(:helper_method)
-    helpers = %w(resource scope_name resource_name signed_in_resource
-                 resource_class resource_params devise_mapping)
+    helpers = %w[resource scope_name resource_name signed_in_resource
+                 resource_class resource_params devise_mapping]
     helper_method(*helpers)
   end
 
@@ -24,12 +22,12 @@ class DeviseController < Devise.parent_controller.constantize
   #
   # This method should be public as it is in ActionPack
   # itself. Changing its visibility may break other gems.
-  def _prefixes #:nodoc:
+  def _prefixes # :nodoc:
     @_prefixes ||= if self.class.scoped_views? && request && devise_mapping
-      ["#{devise_mapping.scoped_path}/#{controller_name}"] + super
-    else
-      super
-    end
+                     ["#{devise_mapping.scoped_path}/#{controller_name}"] + super
+                   else
+                     super
+                   end
   end
 
   protected
@@ -43,7 +41,7 @@ class DeviseController < Devise.parent_controller.constantize
   def resource_name
     devise_mapping.name
   end
-  alias :scope_name :resource_name
+  alias scope_name resource_name
 
   # Proxy to devise map class
   def resource_class
@@ -57,27 +55,27 @@ class DeviseController < Devise.parent_controller.constantize
 
   # Attempt to find the mapped route for devise based on request path
   def devise_mapping
-    @devise_mapping ||= request.env["devise.mapping"]
+    @devise_mapping ||= request.env['devise.mapping']
   end
 
   # Checks whether it's a devise mapped resource or not.
-  def assert_is_devise_resource! #:nodoc:
-    unknown_action! <<-MESSAGE unless devise_mapping
-Could not find devise mapping for path #{request.fullpath.inspect}.
-This may happen for two reasons:
+  def assert_is_devise_resource! # :nodoc:
+    unknown_action! <<~MESSAGE unless devise_mapping
+      Could not find devise mapping for path #{request.fullpath.inspect}.
+      This may happen for two reasons:
 
-1) You forgot to wrap your route inside the scope block. For example:
+      1) You forgot to wrap your route inside the scope block. For example:
 
-  devise_scope :user do
-    get "/some/route" => "some_devise_controller"
-  end
+        devise_scope :user do
+          get "/some/route" => "some_devise_controller"
+        end
 
-2) You are testing a Devise controller bypassing the router.
-   If so, you can explicitly tell Devise which mapping to use:
+      2) You are testing a Devise controller bypassing the router.
+         If so, you can explicitly tell Devise which mapping to use:
 
-   @request.env["devise.mapping"] = Devise.mappings[:user]
+         @request.env["devise.mapping"] = Devise.mappings[:user]
 
-MESSAGE
+    MESSAGE
   end
 
   # Returns real navigational formats which are supported by Rails
@@ -102,19 +100,20 @@ MESSAGE
   def require_no_authentication
     assert_is_devise_resource!
     return unless is_navigational_format?
+
     no_input = devise_mapping.no_input_strategies
 
     authenticated = if no_input.present?
-      args = no_input.dup.push scope: resource_name
-      warden.authenticate?(*args)
-    else
-      warden.authenticated?(resource_name)
-    end
+                      args = no_input.dup.push scope: resource_name
+                      warden.authenticate?(*args)
+                    else
+                      warden.authenticated?(resource_name)
+                    end
 
-    if authenticated && resource = warden.user(resource_name)
-      set_flash_message(:alert, 'already_authenticated', scope: 'devise.failure')
-      redirect_to after_sign_in_path_for(resource)
-    end
+    return unless authenticated && (resource = warden.user(resource_name))
+
+    set_flash_message(:alert, 'already_authenticated', scope: 'devise.failure')
+    redirect_to after_sign_in_path_for(resource)
   end
 
   # Helper for use after calling send_*_instructions methods on a resource.
@@ -122,16 +121,16 @@ MESSAGE
   # and instructions were sent.
   def successfully_sent?(resource)
     notice = if Devise.paranoid
-      resource.errors.clear
-      :send_paranoid_instructions
-    elsif resource.errors.empty?
-      :send_instructions
-    end
+               resource.errors.clear
+               :send_paranoid_instructions
+             elsif resource.errors.empty?
+               :send_instructions
+             end
 
-    if notice
-      set_flash_message! :notice, notice
-      true
-    end
+    return unless notice
+
+    set_flash_message! :notice, notice
+    true
   end
 
   # Sets the flash message with :key, using I18n. By default you are able
@@ -155,23 +154,19 @@ MESSAGE
     message = find_message(kind, options)
     if options[:now]
       flash.now[key] = message if message.present?
-    else
-      flash[key] = message if message.present?
+    elsif message.present?
+      flash[key] = message
     end
   end
 
   # Sets flash message if is_flashing_format? equals true
   def set_flash_message!(key, kind, options = {})
-    if is_flashing_format?
-      set_flash_message(key, kind, options)
-    end
+    set_flash_message(key, kind, options) if is_flashing_format?
   end
 
   # Sets minimum password length to show to user
   def set_minimum_password_length
-    if devise_mapping.validatable?
-      @minimum_password_length = resource_class.password_length.min
-    end
+    @minimum_password_length = resource_class.password_length.min if devise_mapping.validatable?
   end
 
   def devise_i18n_options(options)

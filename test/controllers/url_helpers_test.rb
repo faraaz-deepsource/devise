@@ -16,9 +16,9 @@ class RoutesTest < Devise::ControllerTestCase
                  send(:"#{prepend_path}user_#{name}_url")
 
     # With string
-    assert_equal @controller.send(:"#{prepend_path}#{name}_path", "user"),
+    assert_equal @controller.send(:"#{prepend_path}#{name}_path", 'user'),
                  send(:"#{prepend_path}user_#{name}_path")
-    assert_equal @controller.send(:"#{prepend_path}#{name}_url", "user"),
+    assert_equal @controller.send(:"#{prepend_path}#{name}_url", 'user'),
                  send(:"#{prepend_path}user_#{name}_url")
 
     # Default url params
@@ -34,7 +34,6 @@ class RoutesTest < Devise::ControllerTestCase
     assert_equal @controller.send(:"#{prepend_path}#{name}_url", User.new),
                  send(:"#{prepend_path}user_#{name}_url")
   end
-
 
   test 'should alias session to mapped user session' do
     assert_path_and_url :session
